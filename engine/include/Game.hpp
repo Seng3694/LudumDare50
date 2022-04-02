@@ -29,6 +29,14 @@ class Game
     {
         clearColor = color;
     }
+    inline const sf::View &getView()
+    {
+        return window.getView();
+    }
+    inline void setView(sf::View& view)
+    {
+        window.setView(view);
+    }
 
   private:
     sf::RenderWindow window;

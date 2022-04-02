@@ -3,7 +3,7 @@
 
 int main()
 {
-    gjt::Game game("LudumDare50", 1280, 720);
+    gjt::Game game("LudumDare50", 864, 768);
     game.run<PlayState>();
     return 0;
 }

@@ -2,11 +2,18 @@
 #include <memory>
 
 TileMap::TileMap(
-    std::shared_ptr<gjt::Tileset> ts, const uint32_t w, const uint32_t h, const tile_t tiles[])
-    : tileset(ts), width(w), height(h)
+    std::shared_ptr<gjt::Tileset> ts, const uint32_t w, const uint32_t h,
+    const uint8_t tiles[])
+    : tileset(ts), maxScore(0), width(w), height(h)
 {
-    this->tiles = new tile_t[w * h];
-    memcpy(this->tiles, tiles, w * h * sizeof(tile_t));
+    const uint32_t size = w * h;
+    this->tiles = new TileType[size];
+    for (uint32_t i = 0; i< size; ++i)
+    {
+        this->tiles[i] = (TileType)tiles[i];
+        if (this->tiles[i] == TileType::HighGrass)
+            maxScore++;
+    }
 }
 
 TileMap::~TileMap()
@@ -33,14 +40,14 @@ void TileMap::draw(sf::RenderTarget &target, sf::RenderStates states) const
     {
         for (uint32_t x = 0; x < width; ++x)
         {
-            tile_t tile = getTile(x, y);
+            TileType tile = getTile(x, y);
             sprite.setPosition(
                 x * tileset->getTileWidth(), y * tileset->getTileHeight());
 
             sprite.setTextureRect(tileset->getTextureRect(0));
             target.draw(sprite, states);
 
-            if (tile != 0)
+            if (tile != TileType::LowGrass)
             {
                 sprite.setTextureRect(tileset->getTextureRect((uint32_t)tile));
                 target.draw(sprite, states);

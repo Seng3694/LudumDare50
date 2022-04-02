@@ -3,12 +3,15 @@ set(GAME_HEADERS
 	include/TileMap.hpp
 	include/Map1.hpp
 	include/Player.hpp
+	include/ResourceBar.hpp
+	include/StringFormat.hpp
+	include/Tiles.hpp
 )
 
 set(GAME_SOURCES
 	src/Main.cpp
+	src/StringFormat.cpp
 	src/TileMap.cpp
-	src/Player.cpp
 )
 
 include_directories(include)
