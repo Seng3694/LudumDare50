@@ -1,8 +1,11 @@
 #pragma once
 
 #include <cstdint>
+#include "Maps.hpp"
 
 struct Score
 {
-    uint32_t maxScore;
+    Maps map;
+    int32_t value;
+    float time;
 };

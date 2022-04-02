@@ -17,6 +17,7 @@
 #include "Player.hpp"
 #include "ResourceBar.hpp"
 #include "StringFormat.hpp"
+#include "SaveFileManager.hpp"
 
 class MapSelectionState;
 
@@ -51,6 +52,7 @@ class PlayState : public gjt::GameState
     std::shared_ptr<Player> player;
     std::shared_ptr<EnergyBar> energyBar;
     std::shared_ptr<GrassMownBar> grassMownBar;
+    std::shared_ptr<SaveData> saveData;
     sf::Text totalTimeText;
     sf::Text mapNameText;
     char totalTimeTextBuffer[10];
@@ -59,18 +61,20 @@ class PlayState : public gjt::GameState
     float resetTimerElapsed;
     float resetStackCount;
     const uint8_t const *mapData;
-    const sf::String mapName;
-    const sf::Vector2u mapSpawn;
+    sf::String mapName;
+    sf::Vector2u mapSpawn;
+    const Maps mapID;
 
     bool enableDebug;
     PlayStateDebugUiContext context;
 
   public:
-    PlayState(const uint8_t mapData[], const sf::String& mapName, const sf::Vector2u& playerSpawn)
-        : font(nullptr), map(nullptr), player(nullptr), enableDebug(false),
-          totalTime(0.0f), mapData(mapData), mapName(mapName),
-          mapSpawn(playerSpawn)
+    PlayState(const Maps mapID)
+        : font(nullptr), map(nullptr), player(nullptr), saveData(nullptr), enableDebug(false), totalTime(0.0f), mapID(mapID)
     {
+        mapData = get_map_data(mapID);
+        mapName = get_map_name(mapID);
+        mapSpawn = get_map_spawn(mapID);
     }
 
     virtual void load() override
@@ -78,6 +82,8 @@ class PlayState : public gjt::GameState
         auto content = services->resolve<gjt::ContentManager>();
         font =
             content->loadFromFile<sf::Font>("content/monogram-extended.ttf");
+
+        saveData = services->resolve<SaveFileManager>()->load();
 
         tileset = std::make_shared<gjt::Tileset>(
             content->loadFromFile<sf::Texture>("content/tiles.png"), 16, 16);
@@ -178,6 +184,13 @@ class PlayState : public gjt::GameState
 
         context.mapPosition = map->getPosition();
         context.mapScale = map->getScale().x;
+
+        if (player->getGrassMown() == map->getMaxScore())
+        {
+            saveData->scores[(uint32_t)mapID].time = totalTime;
+            saveData->scores[(uint32_t)mapID].value = player->getHp();
+            services->resolve<SaveFileManager>()->save();
+        }
     }
 
     virtual void ui(float dt) override

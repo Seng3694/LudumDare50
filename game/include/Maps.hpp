@@ -2,41 +2,32 @@
 
 #include <SFML/Graphics.hpp>
 
-sf::String map_1_name = "The Lonely Rock";
-uint8_t map_1[] =  {2,2,2,2,2,2,2,2,2,2,2,2,
-                    2,1,1,1,1,1,1,1,1,1,1,2,
-                    2,1,1,1,1,1,1,1,1,1,1,2,
-                    2,1,1,1,1,1,1,1,1,1,1,2,
-                    2,1,1,1,1,1,1,1,1,1,1,2,
-                    2,1,1,1,1,3,1,1,1,1,1,2,
-                    2,1,1,1,1,1,1,1,1,1,1,2,
-                    2,1,1,1,1,1,1,1,1,1,1,2,
-                    2,1,1,1,1,1,1,1,1,1,1,2,
-                    2,2,2,2,2,2,2,2,2,2,2,2};
-sf::Vector2u map_1_spawn = {0, 5};
+enum class Maps
+{
+    Map1,
+    Map2,
+    Map3,
+    Map4,
+    Map5,
+    Map6,
+    Map7,
+    Map8,
+    Map9,
+    Count
+};
 
-sf::String map_2_name = "The Cross";
-uint8_t map_2[] =  {1,1,1,1,1,1,1,1,1,1,1,1,
-                    1,1,1,1,1,1,1,1,1,1,1,1,
-                    1,1,3,1,1,2,2,1,1,3,1,1,
-                    1,1,1,1,1,2,2,1,1,1,1,1,
-                    1,1,2,2,2,2,2,2,2,2,1,1,
-                    1,1,2,2,2,2,2,2,2,2,1,1,
-                    1,1,1,1,1,2,2,1,1,1,1,1,
-                    1,1,3,1,1,2,2,1,1,3,1,1,
-                    1,1,1,1,1,1,1,1,1,1,1,1,
-                    1,1,1,1,1,1,1,1,1,1,1,1};
-sf::Vector2u map_2_spawn = {5, 4};
+extern sf::String map_1_name;
+extern uint8_t map_1[];
+extern sf::Vector2u map_1_spawn;
 
-sf::String map_3_name = "The Catwalk";
-uint8_t map_3[] =  {2,1,1,1,1,1,1,1,1,1,1,1,
-                    2,1,3,1,1,1,3,1,1,1,1,1,
-                    2,1,1,1,3,1,1,1,3,1,1,1,
-                    2,1,1,1,1,1,1,1,1,1,1,1,
-                    2,2,2,2,2,2,2,2,2,2,1,1,
-                    2,2,2,2,2,2,2,2,2,2,1,1,
-                    2,1,1,1,1,1,1,1,1,1,1,1,
-                    2,1,1,1,3,1,1,1,3,1,1,1,
-                    2,1,3,1,1,1,3,1,1,1,1,1,
-                    2,1,1,1,1,1,1,1,1,1,1,1};
-sf::Vector2u map_3_spawn = {5, 5};
+extern sf::String map_2_name;
+extern uint8_t map_2[];
+extern sf::Vector2u map_2_spawn;
+
+extern sf::String map_3_name;
+extern uint8_t map_3[];
+extern sf::Vector2u map_3_spawn;
+
+const sf::String &get_map_name(Maps maps);
+const uint8_t const *get_map_data(Maps maps);
+const sf::Vector2u &get_map_spawn(Maps maps);

@@ -16,5 +16,7 @@ enum class TileType : uint8_t
     ResourceBarLeftGreen,
     ResourceBarCenterGreen,
     ResourceBarLeftEmpty,
-    ResourceBarCenterEmpty
+    ResourceBarCenterEmpty,
+    Star,
+    StarEmpty
 };

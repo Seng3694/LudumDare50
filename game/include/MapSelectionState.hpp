@@ -18,67 +18,10 @@
 #include "ResourceBar.hpp"
 #include "StringFormat.hpp"
 #include "TileMap.hpp"
+#include "SaveFileManager.hpp"
+#include <cassert>
 
 #include "Maps.hpp"
-
-enum class Maps
-{
-    Map1,
-    Map2,
-    Map3,
-    Map4,
-    Map5,
-    Map6,
-    Map7,
-    Map8,
-    Map9,
-    Count
-};
-
-const sf::String &get_map_name(Maps maps)
-{
-    switch (maps)
-    {
-    case Maps::Map1:
-        return map_1_name;
-    case Maps::Map2:
-        return map_2_name;
-    case Maps::Map3:
-        return map_3_name;
-    default:
-        return map_1_name;
-    }
-}
-
-const uint8_t const *get_map_data(Maps maps)
-{
-    switch (maps)
-    {
-    case Maps::Map1:
-        return map_1;
-    case Maps::Map2:
-        return map_2;
-    case Maps::Map3:
-        return map_3;
-    default:
-        return map_1;
-    }
-}
-
-const sf::Vector2u &get_map_spawn(Maps maps)
-{
-    switch (maps)
-    {
-    case Maps::Map1:
-        return map_1_spawn;
-    case Maps::Map2:
-        return map_2_spawn;
-    case Maps::Map3:
-        return map_3_spawn;
-    default:
-        return map_1_spawn;
-    }
-}
 
 struct MapSelectionDebugUiContext
 {
@@ -93,15 +36,21 @@ class MapSelectionState : public gjt::GameState
     std::shared_ptr<sf::Font> font;
     std::shared_ptr<sf::Texture> frameTexture;
     std::shared_ptr<gjt::Tileset> tileset;
+    std::shared_ptr<SaveData> saveData;
     sf::RenderTexture renderTexture;
     std::unordered_map<Maps, std::shared_ptr<TileMap>> tileMaps;
     sf::Sprite frameSprite;
+    sf::Sprite starSprite;
     sf::Text headerText;
     sf::Text mapNameText;
+    sf::Text clearTimeText;
+    char clearTimeBuffer[10];
     float mapSelectionOffsetLeft;
     float mapSelectionOffsetTop;
     float mapSelectionOffsetBottom;
     float mapSelectionSpacing;
+    float starSpacing;
+    float starOffset;
 
     int32_t currentPage;
     int32_t selectedIndex;
@@ -116,6 +65,8 @@ class MapSelectionState : public gjt::GameState
             content->loadFromFile<sf::Font>("content/monogram-extended.ttf");
         frameTexture =
             content->loadFromFile<sf::Texture>("content/map_frame.png");
+
+        saveData = services->resolve<SaveFileManager>()->load();
 
         headerText.setFont(*font);
         headerText.setCharacterSize(60);
@@ -140,6 +91,18 @@ class MapSelectionState : public gjt::GameState
         mapNameText.setFillColor(sf::Color(0xffa300ff));
         mapNameText.setPosition(game->getWindowWidth() / 2.0f, game->getWindowHeight() - 45.0f);
 
+        
+        clearTimeText.setFont(*font);
+        clearTimeText.setCharacterSize(36);
+        clearTimeText.setStyle(sf::Text::Bold);
+        clearTimeText.setString("N/A");
+        localBounds = clearTimeText.getLocalBounds();
+        clearTimeText.setOrigin(
+            localBounds.width / 2.0f, localBounds.height / 2.0f);
+        clearTimeText.setOutlineThickness(2.0f);
+        clearTimeText.setOutlineColor(sf::Color::Black);
+        clearTimeText.setFillColor(sf::Color(0xffa300ff));
+
         frameSprite.setTexture(*frameTexture);
 
         mapSelectionOffsetLeft = 40.0f;
@@ -160,6 +123,13 @@ class MapSelectionState : public gjt::GameState
             tileset, 12, 10, get_map_data(Maps::Map2));
         tileMaps[Maps::Map3] = std::make_shared<TileMap>(
             tileset, 12, 10, get_map_data(Maps::Map3));
+
+        starSprite.setTexture(*tileset->getTexture());
+        starSprite.setTextureRect(
+            tileset->getTextureRect((uint32_t)TileType::Star));
+        
+        starSpacing = 6.0f;
+        starOffset = 38.0f;
 
         for (Maps i = Maps::Map4; i < Maps::Count; i = (Maps)((int)i + 1))
             tileMaps[i] = std::make_shared<TileMap>(
@@ -215,6 +185,7 @@ class MapSelectionState : public gjt::GameState
         for (uint32_t i = mapStart; i < mapEnd; ++i)
         {
             auto tm = tileMaps[(Maps)i];
+
             uint32_t x = (i % 3);
             uint32_t y = (i / 3);
             float xPos = 0.0f;
@@ -258,6 +229,48 @@ class MapSelectionState : public gjt::GameState
 
             tm->setPosition(xPos, yPos);
             renderTexture.draw(*tm);
+
+            //stars
+            const uint32_t score = saveData->scores[i].value;
+
+            for (uint32_t j = 0; j < 5; ++j)
+            {
+                if (score >= j + 1)
+                {
+                    starSprite.setTextureRect(
+                        tileset->getTextureRect((uint32_t)TileType::Star));
+                }
+                else
+                {
+                    starSprite.setTextureRect(tileset->getTextureRect(
+                        (uint32_t)TileType::StarEmpty));
+                }
+
+                starSprite.setPosition(
+                    starOffset + xPos +
+                        j * (tileset->getTileWidth() + starSpacing),
+                    yPos - 6);
+
+                renderTexture.draw(starSprite);
+            }
+
+            //time text
+            if (saveData->scores[i].time < 1.0e-5f)
+                snprintf(clearTimeBuffer, 10, "N/A");
+            else
+            {
+                StringFormat::formatSeconds(
+                    saveData->scores[i].time, clearTimeBuffer, 10);
+            }
+
+            clearTimeText.setString(clearTimeBuffer);
+            sf::FloatRect localBounds = clearTimeText.getLocalBounds();
+            clearTimeText.setOrigin(
+                localBounds.width / 2.0f, localBounds.height / 2.0f);
+            clearTimeText.setPosition(
+                xPos + tm->getPixelWidth() / 2.0f,
+                yPos + tm->getPixelHeight() - localBounds.height - 6);
+            renderTexture.draw(clearTimeText);
         }
 
         renderTexture.display();
@@ -302,11 +315,7 @@ class MapSelectionState : public gjt::GameState
             if (e.key.code == sf::Keyboard::Enter)
             {
                 game->switchState<PlayState>(
-                    std::make_shared<PlayState>(
-                        get_map_data((Maps)selectedIndex),
-                        get_map_name((Maps)selectedIndex),
-                        get_map_spawn((Maps)selectedIndex)
-                        ));
+                    std::make_shared<PlayState>((Maps)selectedIndex));
                 return;
             }
 

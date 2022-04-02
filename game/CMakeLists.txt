@@ -6,12 +6,16 @@ set(GAME_HEADERS
 	include/MapSelectionState.hpp
 	include/Player.hpp
 	include/ResourceBar.hpp
+	include/SaveFileManager.hpp
 	include/StringFormat.hpp
+	include/Score.hpp
 	include/Tiles.hpp
 )
 
 set(GAME_SOURCES
 	src/Main.cpp
+	src/Maps.cpp
+	src/SaveFileManager.cpp
 	src/StringFormat.cpp
 	src/TileMap.cpp
 )

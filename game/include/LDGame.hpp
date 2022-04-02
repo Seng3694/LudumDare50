@@ -3,6 +3,7 @@
 #include "Game.hpp"
 #include "PlayState.hpp"
 #include "MapSelectionState.hpp"
+#include "SaveFileManager.hpp"
 
 class LDGame : public gjt::Game
 {
@@ -17,6 +18,8 @@ class LDGame : public gjt::Game
     virtual void load() override
     {
         gjt::Game::load();
+        services.registerInstance<SaveFileManager>(
+            std::make_shared<SaveFileManager>("save.bin"));
         switchState(std::make_shared<MapSelectionState>());
     }
 };
