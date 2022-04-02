@@ -1,9 +1,9 @@
-#include "Game.hpp"
+#include "LDGame.hpp"
 #include "PlayState.hpp"
 
 int main()
 {
-    gjt::Game game("LudumDare50", 864, 768);
-    game.run<PlayState>();
+    LDGame game("LudumDare50", 768, 704);
+    game.run();
     return 0;
 }

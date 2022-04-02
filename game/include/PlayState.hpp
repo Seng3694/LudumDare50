@@ -14,16 +14,19 @@
 #include "Tileset.hpp"
 #include "AnimatedSprite.hpp"
 #include "TileMap.hpp"
-#include "Map1.hpp"
 #include "Player.hpp"
 #include "ResourceBar.hpp"
+#include "StringFormat.hpp"
 
 #define STRINGIFY(x) (#x)
+
+#define TILE_SCALING (4.0f)
 
 struct DebugUiContext
 {
     sf::Vector2f mapPosition;
     sf::Vector2i cameraCenter;
+    sf::Vector2f grassMownBarPosition;
     float mapScale;
 };
 
@@ -47,13 +50,24 @@ class PlayState : public gjt::GameState
     std::shared_ptr<EnergyBar> energyBar;
     std::shared_ptr<GrassMownBar> grassMownBar;
     sf::Text totalTimeText;
+    sf::Text mapNameText;
+    char totalTimeTextBuffer[10];
     float totalTime;
+    float resetTimer;
+    float resetTimerElapsed;
+    float resetStackCount;
+    const uint8_t const *mapData;
+    const sf::String mapName;
+    const sf::Vector2u mapSpawn;
+
     bool enableDebug;
     DebugUiContext context;
 
   public:
-    PlayState(gjt::Game *const game, gjt::ServiceLocator *const services)
-        : gjt::GameState(game, services), font(nullptr), map(nullptr), player(nullptr), enableDebug(false)
+    PlayState(const uint8_t mapData[], const sf::String& mapName, const sf::Vector2u& playerSpawn)
+        : font(nullptr), map(nullptr), player(nullptr), enableDebug(false),
+          totalTime(0.0f), mapData(mapData), mapName(mapName),
+          mapSpawn(playerSpawn)
     {
     }
 
@@ -66,14 +80,9 @@ class PlayState : public gjt::GameState
         tileset = std::make_shared<gjt::Tileset>(
             content->loadFromFile<sf::Texture>("content/tiles.png"), 16, 16);
 
-        map = std::make_shared<TileMap>(tileset, 9, 7, map_1);
+        map = std::make_shared<TileMap>(tileset, 12, 10, mapData);
 
-        /*map->setOrigin(
-            map->getPixelWidth() / 2.0f, map->getPixelHeight() / 2.0f);
-        map->setPosition(
-            game->getWindowWidth() / 2.0f, game->getWindowHeight() / 2.0f);*/
-
-        map->setPosition(0, 16);
+        map->setPosition(0, 8);
 
         player = std::shared_ptr<Player>(new Player(map));
         player->setIsAnimating(false);
@@ -84,7 +93,7 @@ class PlayState : public gjt::GameState
                     content->loadFromFile<sf::Texture>("content/player.png"), 16, 16),
                 1, 0.1f, true));
 
-        player->setMapPosition(0, (uint32_t)map->getHeight() / 2.0f);
+        player->setMapPosition(mapSpawn);
 
         energyBar = std::make_shared<EnergyBar>(tileset, &player->getHp(), 5);
         energyBar->setScale(0.5f, 0.5f);
@@ -93,25 +102,78 @@ class PlayState : public gjt::GameState
             tileset, &player->getGrassMown(), map->getMaxScore());
         grassMownBar->setScale(
             (float)game->getWindowWidth() /
-                (grassMownBar->getPixelWidth() * 6),           
+                (grassMownBar->getPixelWidth() * TILE_SCALING),           
             0.5f);
-        grassMownBar->setPosition(0, energyBar->getPixelHeight() * 0.5f);
+        grassMownBar->setPosition(
+            0, game->getWindowHeight() / TILE_SCALING - 8);
 
         game->setClearColor(sf::Color(0x5F574fff));
-        sf::View view = game->getView();
-        view.setCenter(game->getWindowWidth() / 6.0f / 2.0f, game->getWindowHeight() / 6.0f / 2.0f);
-        view.zoom(1 / 6.0f);
-        game->setView(view);
 
         totalTime = 0.0f;
+        totalTimeText.setFont(*font);
+        totalTimeText.setCharacterSize(36);
+        totalTimeText.setStyle(sf::Text::Bold);
+        
+        StringFormat::formatSeconds(totalTime, totalTimeTextBuffer, 10);
+        totalTimeText.setString(totalTimeTextBuffer);
+        sf::FloatRect localBounds = totalTimeText.getLocalBounds();
+        totalTimeText.setOrigin(0, localBounds.height / 2.0f);
+        totalTimeText.setPosition(
+            game->getWindowWidth() - localBounds.width - 10, energyBar->getPixelHeight() / 2.0f - 12);
+        totalTimeText.setOutlineThickness(2.0f);
+        totalTimeText.setOutlineColor(sf::Color::Black);
+        totalTimeText.setFillColor(sf::Color(0xffa300ff));
+        
+        mapNameText.setFont(*font);
+        mapNameText.setCharacterSize(36);
+        mapNameText.setStyle(sf::Text::Bold);
+        mapNameText.setString(mapName);
+        localBounds = totalTimeText.getLocalBounds();
+        mapNameText.setOrigin(localBounds.width / 2.0f, localBounds.height / 2.0f);
+        mapNameText.setPosition(game->getWindowWidth() / 2.0f,
+            energyBar->getPixelHeight() / 2.0f - 12);
+        mapNameText.setOutlineThickness(2.0f);
+        mapNameText.setOutlineColor(sf::Color::Black);
+        mapNameText.setFillColor(sf::Color(0xffa300ff));
+
+        resetTimer = 1.0f;
+        resetTimerElapsed = resetTimer;
 
         enableDebug = false;
     }
 
     virtual void update(float dt) override
     {
-        totalTime += dt;
-        player->update(dt);
+        if (player->getGameState() == PlayerGameState::Mowing)
+            totalTime += dt;
+
+        StringFormat::formatSeconds(totalTime, totalTimeTextBuffer, 10);
+        totalTimeText.setString(totalTimeTextBuffer);
+
+        if (player->getHp() == 0)
+        {
+            totalTime = 0.0f;
+            resetTimerElapsed = 0.0f;
+            resetStackCount = (float)player->getPlayerMoveCount();
+            player->setGameState(PlayerGameState::Preparation);
+        }
+
+        if (resetTimerElapsed < resetTimer)
+        {
+            resetTimerElapsed += dt;
+            uint32_t current = (uint32_t)gjt::lerp(resetStackCount, 0, resetTimerElapsed);
+
+            while (player->getPlayerMoveCount() > current)
+            {
+                player->undoMove();
+            }
+        }
+        else
+        {
+            resetTimerElapsed = resetTimer;
+            player->update(dt);
+        }
+
         context.mapPosition = map->getPosition();
         context.mapScale = map->getScale().x;
     }
@@ -139,7 +201,12 @@ class PlayState : public gjt::GameState
                     view.setCenter(context.cameraCenter.x, context.cameraCenter.y);
                     game->setView(view);
                 }
-                
+
+                context.grassMownBarPosition = grassMownBar->getPosition();
+                if (ImGui::SliderFloat2("grassmownbarpos", &context.grassMownBarPosition.x, -100, 300))
+                {
+                    grassMownBar->setPosition(context.grassMownBarPosition);
+                }
 
                 ImGui::End();
             }
@@ -150,10 +217,21 @@ class PlayState : public gjt::GameState
         float dt, sf::RenderTarget &target,
         sf::RenderStates states = sf::RenderStates()) override
     {
+        sf::View view = game->getView();
+        view.setCenter(
+            game->getWindowWidth() / TILE_SCALING / 2.0f,
+            game->getWindowHeight() / TILE_SCALING / 2.0f);
+        view.zoom(1 / TILE_SCALING);
+        game->setView(view);
+
         target.draw(*map, states);
         target.draw(*player, states);
         target.draw(*energyBar, states);
         target.draw(*grassMownBar, states);
+
+        game->resetView();
+        target.draw(totalTimeText, states);
+        target.draw(mapNameText, states);
     }
 
     virtual void handleEvent(const sf::Event &e, float dt) override
@@ -165,7 +243,15 @@ class PlayState : public gjt::GameState
                 enableDebug = !enableDebug;
                 return;
             }
+            if (e.key.code == sf::Keyboard::Key::Z && e.key.control)
+            {
+                player->undoMove();
+                return;
+            }
             
+            if (resetTimerElapsed != resetTimer)
+                return;
+
             if (e.key.code == sf::Keyboard::Key::D || 
                 e.key.code == sf::Keyboard::Key::Right)
             {

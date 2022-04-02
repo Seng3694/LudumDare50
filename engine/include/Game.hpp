@@ -12,10 +12,11 @@ class Game
   public:
     Game(
         const std::string &title, const uint32_t width, const uint32_t height);
+    virtual ~Game(){}
 
-    template <typename T> void switchState();
+    template <typename T> void switchState(std::shared_ptr<T> instance);
 
-    template <typename T> void run();
+    void run();
 
     inline uint32_t getWindowWidth() const
     {
@@ -37,8 +38,12 @@ class Game
     {
         window.setView(view);
     }
+    inline void resetView()
+    {
+        window.setView(window.getDefaultView());
+    }
 
-  private:
+  protected:
     sf::RenderWindow window;
     ServiceLocator services;
     std::shared_ptr<GameState> currentState;
@@ -46,14 +51,14 @@ class Game
     const uint32_t windowWidth;
     const uint32_t windowHeight;
 
-    void load();
-    void update(float dt);
-    void ui(float dt);
-    void draw(
+    virtual void load();
+    virtual void update(float dt);
+    virtual void ui(float dt);
+    virtual void draw(
         float dt, sf::RenderTarget &target,
         sf::RenderStates states = sf::RenderStates::Default);
-    void handleEvent(const sf::Event &e, float dt);
-    void unload();
+    virtual void handleEvent(const sf::Event &e, float dt);
+    virtual void unload();
 };
 
 } // namespace gjt

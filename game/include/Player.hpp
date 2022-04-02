@@ -5,6 +5,7 @@
 #include <CustomMath.hpp>
 #include "TileMap.hpp"
 #include "Tiles.hpp"
+#include <stack>
 
 enum class PlayerAnimationState
 {
@@ -25,6 +26,14 @@ enum class MoveDirection
     Up,
     Right,
     Down
+};
+
+struct PlayerMove
+{
+    sf::Vector2u oldPosition;
+    sf::Vector2u newPosition;
+    int32_t hp;
+    TileType tile;
 };
 
 class Player : public gjt::AnimatedSprite<PlayerAnimationState>
@@ -58,8 +67,18 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
         setMapPosition(position.x, position.y);
     }
 
-    inline void moveTo(const MoveDirection direction)
+    inline PlayerGameState getGameState()
     {
+        return gameState;
+    }
+    inline void setGameState(const PlayerGameState state)
+    {
+        gameState = state;
+    }
+
+    void moveTo(const MoveDirection direction)
+    {
+        sf::Vector2u oldPostion = mapPosition;
         sf::Vector2u position = mapPosition;
         switch (direction)
         {
@@ -91,6 +110,7 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
                 {
                     if (type == TileType::HighGrass)
                     {
+                        moves.push({oldPostion, position, hp, type});
                         map->setTile(
                             position.x, position.y,
                             TileType::LowGrass);
@@ -110,6 +130,29 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
         }
     }
 
+    bool undoMove()
+    {
+        if (moves.size() == 0)
+            return false;
+        PlayerMove lastMove = moves.top();
+        moves.pop();
+
+        if (lastMove.tile == TileType::HighGrass)
+            map->setTile(
+                lastMove.newPosition.x, lastMove.newPosition.y,
+                TileType::HighGrass);
+
+        hp = lastMove.hp;
+
+        grassMown--;
+        score = gjt::clamp<int32_t>(
+            grassMown - (maxHp - hp), 0, map->getMaxScore());
+        
+        setMapPosition(lastMove.oldPosition);
+
+        return true;
+    }
+
     inline int32_t &getScore()
     {
         return score;
@@ -125,7 +168,13 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
         return hp;
     }
 
+    inline uint32_t getPlayerMoveCount()
+    {
+        return (uint32_t)moves.size();
+    }
+
   private:
+    std::stack<PlayerMove> moves;
     std::shared_ptr<TileMap> map;
     sf::Vector2u mapPosition;
     int32_t grassMown;

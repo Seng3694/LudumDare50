@@ -29,7 +29,7 @@ void TileMap::draw(sf::RenderTarget &target, sf::RenderStates states) const
     sf::RectangleShape gridRect;
 
     gridRect.setFillColor(sf::Color::Transparent);
-    const float gridOutlineThickness = 0.1f;
+    const float gridOutlineThickness = 0.2f;
     gridRect.setSize(sf::Vector2f(
         tileset->getTileWidth() - gridOutlineThickness * 2,
         tileset->getTileWidth() - gridOutlineThickness * 2));

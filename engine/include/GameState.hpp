@@ -5,14 +5,11 @@
 
 namespace gjt
 {
-class Game;
 
 class GameState
 {
+    friend class Game;
   public:
-    GameState(Game *const game, ServiceLocator *const services) : game(game), services(services)
-    {
-    }
     virtual ~GameState(){};
 
     virtual void load(){};
@@ -25,7 +22,7 @@ class GameState
     virtual void unload(){};
 
   protected:
-    Game *const game;
-    ServiceLocator *const services;
+    Game *game;
+    ServiceLocator *services;
 };
 } // namespace gjt

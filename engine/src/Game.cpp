@@ -17,6 +17,40 @@ Game::Game(
         sf::Style::Close | sf::Style::Titlebar);
 }
 
+void Game::run()
+{
+    load();
+    sf::Clock clock;
+    while (window.isOpen())
+    {
+        sf::Time dt = clock.restart();
+        float dtf = dt.asSeconds();
+
+        sf::Event e;
+
+        while (window.pollEvent(e))
+        {
+            ImGui::SFML::ProcessEvent(window, e);
+            if (e.type == sf::Event::Closed)
+                window.close();
+            else
+                handleEvent(e, dtf);
+        }
+        ImGui::SFML::Update(window, dt);
+
+        window.clear(clearColor);
+
+        ui(dtf);
+        update(dtf);
+        draw(dtf, window);
+        ImGui::SFML::Render(window);
+
+        window.display();
+    }
+
+    unload();
+}
+
 void Game::load()
 {
     ImGui::SFML::Init(window);
