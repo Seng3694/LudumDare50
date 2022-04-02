@@ -2,8 +2,8 @@ set(GAME_HEADERS
 	include/PlayState.hpp
 	include/LDGame.hpp
 	include/TileMap.hpp
-	include/Map1.hpp
-	include/Map2.hpp
+	include/Maps.hpp
+	include/MapSelectionState.hpp
 	include/Player.hpp
 	include/ResourceBar.hpp
 	include/StringFormat.hpp

@@ -60,6 +60,10 @@ class TileMap : public sf::Transformable, public sf::Drawable
     {
         return maxScore;
     }
+    inline void setRenderGrid(const bool render)
+    {
+        renderGrid = render;
+    }
 
   private: 
     std::shared_ptr<gjt::Tileset> tileset;
@@ -67,6 +71,7 @@ class TileMap : public sf::Transformable, public sf::Drawable
     uint32_t width;
     uint32_t height;
     uint32_t maxScore;
+    bool renderGrid;
 
     void draw(
         sf::RenderTarget &target, sf::RenderStates states) const override;

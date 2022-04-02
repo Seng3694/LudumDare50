@@ -71,9 +71,9 @@ template <typename T>
 inline float wrap(T value, const T min, const T max)
 {
     while (value > max)
-        value = min + (value - max);
+        value = min + (value - max - 1);
     while (value < min)
-        value = max - (min - value);
+        value = max - (min - value - 1);
     return value;
 }
 

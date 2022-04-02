@@ -2,8 +2,7 @@
 
 #include "Game.hpp"
 #include "PlayState.hpp"
-#include "Map1.hpp"
-#include "Map2.hpp"
+#include "MapSelectionState.hpp"
 
 class LDGame : public gjt::Game
 {
@@ -18,7 +17,6 @@ class LDGame : public gjt::Game
     virtual void load() override
     {
         gjt::Game::load();
-        switchState(std::make_shared<PlayState>(
-            map_2, map_2_name, map_2_spawn));
+        switchState(std::make_shared<MapSelectionState>());
     }
 };

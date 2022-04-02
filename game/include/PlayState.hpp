@@ -18,11 +18,13 @@
 #include "ResourceBar.hpp"
 #include "StringFormat.hpp"
 
+class MapSelectionState;
+
 #define STRINGIFY(x) (#x)
 
 #define TILE_SCALING (4.0f)
 
-struct DebugUiContext
+struct PlayStateDebugUiContext
 {
     sf::Vector2f mapPosition;
     sf::Vector2i cameraCenter;
@@ -61,7 +63,7 @@ class PlayState : public gjt::GameState
     const sf::Vector2u mapSpawn;
 
     bool enableDebug;
-    DebugUiContext context;
+    PlayStateDebugUiContext context;
 
   public:
     PlayState(const uint8_t mapData[], const sf::String& mapName, const sf::Vector2u& playerSpawn)
@@ -271,6 +273,12 @@ class PlayState : public gjt::GameState
                 e.key.code == sf::Keyboard::Key::Down)
             {
                 player->moveTo(MoveDirection::Down);
+            }
+            if (e.key.code == sf::Keyboard::Escape)
+            {
+                game->switchState<MapSelectionState>(
+                    std::make_shared<MapSelectionState>());
+                return;
             }
         }
     }

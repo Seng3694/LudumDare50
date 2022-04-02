@@ -4,7 +4,7 @@
 TileMap::TileMap(
     std::shared_ptr<gjt::Tileset> ts, const uint32_t w, const uint32_t h,
     const uint8_t tiles[])
-    : tileset(ts), maxScore(0), width(w), height(h)
+    : tileset(ts), maxScore(0), width(w), height(h), renderGrid(true)
 {
     const uint32_t size = w * h;
     this->tiles = new TileType[size];
@@ -53,10 +53,13 @@ void TileMap::draw(sf::RenderTarget &target, sf::RenderStates states) const
                 target.draw(sprite, states);
             }
             
-            gridRect.setPosition(
-                x * tileset->getTileWidth() + gridOutlineThickness,
-                y * tileset->getTileHeight() + gridOutlineThickness);
-            target.draw(gridRect, states);
+            if (renderGrid)
+            {
+                gridRect.setPosition(
+                    x * tileset->getTileWidth() + gridOutlineThickness,
+                    y * tileset->getTileHeight() + gridOutlineThickness);
+                target.draw(gridRect, states);
+            }
         }
     }
 }
