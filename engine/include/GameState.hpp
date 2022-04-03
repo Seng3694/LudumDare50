@@ -21,7 +21,7 @@ class GameState
     virtual void handleEvent(const sf::Event &e, float dt){};
     virtual void unload(){};
 
-  protected:
+  //protected:
     Game *game;
     ServiceLocator *services;
 };

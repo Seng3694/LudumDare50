@@ -14,7 +14,9 @@ class Game
         const std::string &title, const uint32_t width, const uint32_t height);
     virtual ~Game(){}
 
-    template <typename T> void switchState(std::shared_ptr<T> instance, bool unloadPrevious = true);
+    void switchState(
+        std::shared_ptr<GameState> instance, bool unloadPrevious = true,
+        bool loadNext = true);
 
     void run();
 
@@ -41,6 +43,14 @@ class Game
     inline void resetView()
     {
         window.setView(window.getDefaultView());
+    }
+    inline std::shared_ptr<GameState> getCurrentState()
+    {
+        return currentState;
+    }
+    inline void shouldClose()
+    {
+        window.close();
     }
 
   protected:

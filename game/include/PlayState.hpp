@@ -19,6 +19,7 @@
 #include "StringFormat.hpp"
 #include "SaveFileManager.hpp"
 #include "VictoryState.hpp"
+#include "TransitionState.hpp"
 
 class MapSelectionState;
 
@@ -101,8 +102,10 @@ class PlayState : public gjt::GameState
                 std::make_shared<gjt::Tileset>(
                     content->loadFromFile<sf::Texture>("content/player.png"), 16, 16),
                 1, 0.1f, true));
+        player->setOrigin(8, 8);
 
         player->setMapPosition(mapSpawn);
+        player->update(0.0f);
 
         energyBar = std::make_shared<EnergyBar>(tileset, &player->getHp(), 5);
         energyBar->setScale(0.5f, 0.5f);
@@ -188,8 +191,17 @@ class PlayState : public gjt::GameState
                 moveStack.pop();
             }
             Score newScore = {mapID, player->getHp(), totalTime};
-            game->switchState<VictoryState>(std::make_shared<VictoryState>(
-                mapID, moves, saveData->scores[(uint32_t)mapID], newScore));
+
+            game->switchState(
+                std::static_pointer_cast<gjt::GameState, TransitionState>(
+                    std::make_shared<TransitionState>(
+                        game->getCurrentState(),
+                        std::make_shared<VictoryState>(
+                            mapID, moves, saveData->scores[(uint32_t)mapID],
+                            newScore))));
+
+            //game->switchState(std::make_shared<VictoryState>(
+            //    mapID, moves, saveData->scores[(uint32_t)mapID], newScore));
         }
     }
 
@@ -283,8 +295,16 @@ class PlayState : public gjt::GameState
             }
             if (e.key.code == sf::Keyboard::Escape)
             {
-                game->switchState<MapSelectionState>(
-                    std::make_shared<MapSelectionState>((uint32_t)mapID));
+                game->switchState(
+                    std::static_pointer_cast<gjt::GameState, TransitionState>(
+                        std::make_shared<TransitionState>(
+                            game->getCurrentState(),
+                            std::make_shared<MapSelectionState>(
+                                (uint32_t)mapID))));
+
+                /*game->switchState(std::static_pointer_cast<
+                                  gjt::GameState, MapSelectionState>(
+                    std::make_shared<MapSelectionState>((uint32_t)mapID)));*/
                 return;
             }
             if (e.key.code == sf::Keyboard::R &&

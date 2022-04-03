@@ -14,6 +14,14 @@ enum class PlayerAnimationState
 	Eating
 };
 
+enum class PlayerTiles
+{
+    Right,
+    Left,
+    Up,
+    Down
+};
+
 enum class PlayerGameState
 {
     Preparation,
@@ -57,9 +65,10 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
         
         auto animation = getCurrentAnimation();
         
+        sf::Vector2f origin = getOrigin();
         setPosition(map->getTransform().transformPoint(
-            mapPosition.x * animation->getTileset()->getTileWidth(),
-            mapPosition.y * animation->getTileset()->getTileHeight()));
+            mapPosition.x * animation->getTileset()->getTileWidth() + origin.x,
+            mapPosition.y * animation->getTileset()->getTileHeight() + origin.y));
     }
 
     inline void setMapPosition(const sf::Vector2u position)
@@ -80,6 +89,7 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
     {
         sf::Vector2u oldPostion = mapPosition;
         sf::Vector2u position = mapPosition;
+
         switch (direction)
         {
         case MoveDirection::Left:
@@ -101,6 +111,26 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
         {
             TileType type = (TileType)map->getTile(position.x, position.y);
 
+            const sf::Vector2f direction = gjt::normalize(
+                sf::Vector2f(position) - sf::Vector2f(oldPostion));
+
+            if (direction.x > 0)
+                setTextureRect(
+                    getCurrentAnimation()->getTileset()->getTextureRect(
+                        (uint32_t)PlayerTiles::Right));
+            else if (direction.x < 0)
+                setTextureRect(
+                    getCurrentAnimation()->getTileset()->getTextureRect(
+                        (uint32_t)PlayerTiles::Left));
+            else if (direction.y > 0)
+                setTextureRect(
+                    getCurrentAnimation()->getTileset()->getTextureRect(
+                        (uint32_t)PlayerTiles::Down));
+            else if (direction.y < 0)
+                setTextureRect(
+                    getCurrentAnimation()->getTileset()->getTextureRect(
+                        (uint32_t)PlayerTiles::Up));
+
             if (type != TileType::Boulder)
             {
                 if (type != TileType::Walkway)
@@ -109,6 +139,7 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
                 if (gameState == PlayerGameState::Mowing)
                 {
                     moves.push({oldPostion, position, hp, type});
+
                     if (type == TileType::HighGrass)
                     {
                         map->setTile(

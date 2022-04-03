@@ -39,17 +39,24 @@ class AnimatedSprite : public sf::Sprite
     void addAnimation(const AnimationKey &key, std::shared_ptr<Animation> animation)
     {
         animations[key] = animation;
+
+        if (animations.size() == 1)
+        {
+            setTexture(*animation->getTileset()->getTexture());
+            setTextureRect(animation->getCurrentFrameTextureRectangle());
+        }
     }
 
     virtual void update(float dt)
     {
-        std::shared_ptr<Animation> current = animations.find(key)->second;
         if (isAnimating)
+        {
+            std::shared_ptr<Animation> current = animations.find(key)->second;
             current->update(dt);
-        setTexture(*current->getTileset()->getTexture());
-        setTextureRect(current->getCurrentFrameTextureRectangle());
+            setTexture(*current->getTileset()->getTexture());
+            setTextureRect(current->getCurrentFrameTextureRectangle());
+        }
     }
-
 
   private:
     AnimationKey key;

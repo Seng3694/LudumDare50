@@ -21,10 +21,12 @@
 #include "SaveFileManager.hpp"
 #include <cassert>
 #include "MapView.hpp"
+#include "TransitionState.hpp"
 
 #include "Maps.hpp"
 
 class PlayState;
+class TitleState;
 
 struct MapSelectionDebugUiContext
 {
@@ -218,6 +220,15 @@ class MapSelectionState : public gjt::GameState
                 enableDebug = !enableDebug;
                 return;
             }
+            if (e.key.code == sf::Keyboard::Key::Escape)
+            {
+                game->switchState(
+                    std::static_pointer_cast<gjt::GameState, TransitionState>(
+                        std::make_shared<TransitionState>(
+                            game->getCurrentState(),
+                            std::make_shared<TitleState>())));
+                return;
+            }
 
             int index = selectedIndex;
             int y = index / 3;
@@ -243,8 +254,16 @@ class MapSelectionState : public gjt::GameState
             }
             if (e.key.code == sf::Keyboard::Enter)
             {
-                game->switchState<PlayState>(
-                    std::make_shared<PlayState>((Maps)selectedIndex));
+                game->switchState(
+                    std::static_pointer_cast<gjt::GameState, TransitionState>(
+                        std::make_shared<TransitionState>(
+                            game->getCurrentState(),
+                            std::make_shared<PlayState>(
+                                (Maps)selectedIndex))));
+
+                /*game->switchState(std::static_pointer_cast<
+                                  gjt::GameState, PlayState>(
+                    std::make_shared<PlayState>((Maps)selectedIndex)));*/
                 return;
             }
 

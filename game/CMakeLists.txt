@@ -12,6 +12,8 @@ set(GAME_HEADERS
 	include/StringFormat.hpp
 	include/Score.hpp
 	include/Tiles.hpp
+	include/TitleState.hpp
+	include/TransitionState.hpp
 	include/VictoryState.hpp
 )
 

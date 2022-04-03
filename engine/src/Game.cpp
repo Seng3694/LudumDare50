@@ -17,6 +17,22 @@ Game::Game(
         sf::Style::Close | sf::Style::Titlebar);
 }
 
+void Game::switchState(
+    std::shared_ptr<GameState> instance, bool unloadPrevious, bool loadNext)
+{
+    if (currentState != nullptr && unloadPrevious)
+    {
+        currentState->unload();
+    }
+
+    currentState = instance;
+    currentState->game = this;
+    currentState->services = &services;
+
+    if (loadNext)
+        currentState->load();
+}
+
 void Game::run()
 {
     load();

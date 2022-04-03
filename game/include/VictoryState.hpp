@@ -22,6 +22,7 @@
 #include <cassert>
 #include <stack>
 #include "MapView.hpp"
+#include "TransitionState.hpp"
 
 #include "Maps.hpp"
 
@@ -40,6 +41,7 @@ class VictoryState : public gjt::GameState
   public:
     std::shared_ptr<sf::Font> font;
     std::shared_ptr<gjt::Tileset> tileset;
+    std::shared_ptr<sf::Texture> bannerTexture;
     std::shared_ptr<MapView> mapView;
     std::shared_ptr<SaveData> saveData;
     std::vector<PlayerMove> moves;
@@ -63,8 +65,8 @@ class VictoryState : public gjt::GameState
     VictoryState(const Maps map, const std::vector<PlayerMove> &moves, const Score &oldScore, const Score &newScore)
         : oldScore(oldScore), newScore(newScore), map(map), moves(moves),
           hasNewScore(false), hasNewTime(false),
-          state(VictoryStates::AwaitingInput), rectangleSlideTimer(0.3f),
-          rectangleSlideTimerElapsed(0.0f), newScoreDisplayTimer(1.0f),
+          state(VictoryStates::AwaitingInput), rectangleSlideTimer(0.2f),
+          rectangleSlideTimerElapsed(0.0f), newScoreDisplayTimer(0.5f),
           newScoreDisplayTimerElapsed(0.0f)
     {
     }
@@ -154,19 +156,18 @@ class VictoryState : public gjt::GameState
             localBounds.width / 2.0f, localBounds.height / 2.0f);
         newScoreText.setFillColor(sf::Color(0xffa300ff));
 
-        float bannerHeight = 160.0f;
-
-        auto bannerTexture =
+        bannerTexture =
             content->loadFromFile<sf::Texture>("content/scrolling_rectangle.png");
         newScoreBannerLeftRectangle.setTexture(*bannerTexture);
         newScoreBannerLeftRectangle.setPosition(
             (float)game->getWindowWidth() / -2.0f,
-            game->getWindowHeight() / 2.0f - bannerHeight / 2.0f);
+            game->getWindowHeight() / 2.0f - bannerTexture->getSize().y / 2.0f);
 
         newScoreBannerRightRectangle.setTexture(*bannerTexture);
         newScoreBannerRightRectangle.setPosition(
             (float)game->getWindowWidth(),
-            game->getWindowHeight() / 2.0f - bannerHeight / 2.0f);
+            game->getWindowHeight() / 2.0f -
+                bannerTexture->getSize().y / 2.0f);
 
         enableDebug = false;
         game->setClearColor(sf::Color(0x1d2b53ff));
@@ -185,16 +186,20 @@ class VictoryState : public gjt::GameState
             newScoreBannerLeftRectangle.setPosition(gjt::lerp2(
                 {(float)game->getWindowWidth() / -2.0f,
                  game->getWindowHeight() / 2.0f -
-                     160.0f / 2.0f},
-                sf::Vector2f(0, game->getWindowHeight() / 2.0f - 160.0f / 2.0f),
+                     bannerTexture->getSize().y / 2.0f},
+                sf::Vector2f(
+                    0, game->getWindowHeight() / 2.0f -
+                           bannerTexture->getSize().y / 2.0f),
                 rectangleSlideTimerElapsed / rectangleSlideTimer));
 
             newScoreBannerRightRectangle.setPosition(gjt::lerp2(
                 {(float)game->getWindowWidth(),
-                 game->getWindowHeight() / 2.0f - 160.0f / 2.0f},
+                 game->getWindowHeight() / 2.0f -
+                     bannerTexture->getSize().y / 2.0f},
                 sf::Vector2f(
                     game->getWindowWidth() / 2.0f,
-                    game->getWindowHeight() / 2.0f - 160.0f / 2.0f),
+                    game->getWindowHeight() / 2.0f -
+                        bannerTexture->getSize().y / 2.0f),
                 rectangleSlideTimerElapsed / rectangleSlideTimer));
 
             break;
@@ -206,11 +211,13 @@ class VictoryState : public gjt::GameState
                 state = VictoryStates::AwaitingInput;
 
             newScoreBannerLeftRectangle.setPosition(sf::Vector2f(
-                0, game->getWindowHeight() / 2.0f - 160.0f / 2.0f));
+                0, game->getWindowHeight() / 2.0f -
+                       bannerTexture->getSize().y / 2.0f));
 
             newScoreBannerRightRectangle.setPosition(sf::Vector2f(
                 game->getWindowWidth() / 2.0f,
-                game->getWindowHeight() / 2.0f - 160.0f / 2.0f));
+                game->getWindowHeight() / 2.0f -
+                    bannerTexture->getSize().y / 2.0f));
 
             break;
         }
@@ -278,13 +285,27 @@ class VictoryState : public gjt::GameState
 
             if (e.key.code == sf::Keyboard::Key::Enter || e.key.code == sf::Keyboard::Key::Space || e.key.code == sf::Keyboard::Escape)
             {
-                game->switchState<MapSelectionState>(
-                    std::make_shared<MapSelectionState>((uint32_t)map));
+                game->switchState(
+                    std::static_pointer_cast<gjt::GameState, TransitionState>(
+                        std::make_shared<TransitionState>(
+                            game->getCurrentState(),
+                            std::make_shared<MapSelectionState>(
+                                (uint32_t)map))));
+
+                //game->switchState(
+                //    std::static_pointer_cast<gjt::GameState, MapSelectionState>(std::make_shared<MapSelectionState>((uint32_t)map)));
                 return;
             }
             if (e.key.code == sf::Keyboard::Key::R)
             {
-                game->switchState<PlayState>(std::make_shared<PlayState>(map));
+                game->switchState(
+                    std::static_pointer_cast<gjt::GameState, TransitionState>(
+                        std::make_shared<TransitionState>(
+                            game->getCurrentState(),
+                            std::make_shared<PlayState>(map))));
+
+                /*game->switchState(std::static_pointer_cast<gjt::GameState, PlayState>(
+                    std::make_shared<PlayState>(map)));*/
                 return;
             }
         }
