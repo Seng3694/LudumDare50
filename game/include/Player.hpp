@@ -108,9 +108,9 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
 
                 if (gameState == PlayerGameState::Mowing)
                 {
+                    moves.push({oldPostion, position, hp, type});
                     if (type == TileType::HighGrass)
                     {
-                        moves.push({oldPostion, position, hp, type});
                         map->setTile(
                             position.x, position.y,
                             TileType::LowGrass);
@@ -138,15 +138,19 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
         moves.pop();
 
         if (lastMove.tile == TileType::HighGrass)
+        {
             map->setTile(
                 lastMove.newPosition.x, lastMove.newPosition.y,
                 TileType::HighGrass);
 
+            grassMown--;
+            score = gjt::clamp<int32_t>(
+                grassMown - (maxHp - hp), 0, map->getMaxScore());
+        }
+
         hp = lastMove.hp;
 
-        grassMown--;
-        score = gjt::clamp<int32_t>(
-            grassMown - (maxHp - hp), 0, map->getMaxScore());
+        
         
         setMapPosition(lastMove.oldPosition);
 
@@ -171,6 +175,11 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
     inline uint32_t getPlayerMoveCount()
     {
         return (uint32_t)moves.size();
+    }
+
+    inline const std::stack<PlayerMove> &getPlayerMoves() const
+    {
+        return moves;
     }
 
   private:

@@ -18,6 +18,7 @@
 #include "ResourceBar.hpp"
 #include "StringFormat.hpp"
 #include "SaveFileManager.hpp"
+#include "VictoryState.hpp"
 
 class MapSelectionState;
 
@@ -160,21 +161,12 @@ class PlayState : public gjt::GameState
 
         if (player->getHp() == 0)
         {
-            totalTime = 0.0f;
-            resetTimerElapsed = 0.0f;
-            resetStackCount = (float)player->getPlayerMoveCount();
-            player->setGameState(PlayerGameState::Preparation);
+            startReset();
         }
 
         if (resetTimerElapsed < resetTimer)
         {
-            resetTimerElapsed += dt;
-            uint32_t current = (uint32_t)gjt::lerp(resetStackCount, 0, resetTimerElapsed);
-
-            while (player->getPlayerMoveCount() > current)
-            {
-                player->undoMove();
-            }
+            updateReset(dt);
         }
         else
         {
@@ -187,9 +179,17 @@ class PlayState : public gjt::GameState
 
         if (player->getGrassMown() == map->getMaxScore())
         {
-            saveData->scores[(uint32_t)mapID].time = totalTime;
-            saveData->scores[(uint32_t)mapID].value = player->getHp();
-            services->resolve<SaveFileManager>()->save();
+            std::stack<PlayerMove> moveStack = player->getPlayerMoves();
+            std::vector<PlayerMove> moves;
+            moves.reserve(moveStack.size());
+            while (moveStack.size() > 0)
+            {
+                moves.push_back(moveStack.top());
+                moveStack.pop();
+            }
+            Score newScore = {mapID, player->getHp(), totalTime};
+            game->switchState<VictoryState>(std::make_shared<VictoryState>(
+                mapID, moves, saveData->scores[(uint32_t)mapID], newScore));
         }
     }
 
@@ -258,12 +258,6 @@ class PlayState : public gjt::GameState
                 enableDebug = !enableDebug;
                 return;
             }
-            if (e.key.code == sf::Keyboard::Key::Z && e.key.control)
-            {
-                player->undoMove();
-                return;
-            }
-            
             if (resetTimerElapsed != resetTimer)
                 return;
 
@@ -290,9 +284,35 @@ class PlayState : public gjt::GameState
             if (e.key.code == sf::Keyboard::Escape)
             {
                 game->switchState<MapSelectionState>(
-                    std::make_shared<MapSelectionState>());
+                    std::make_shared<MapSelectionState>((uint32_t)mapID));
                 return;
             }
+            if (e.key.code == sf::Keyboard::R &&
+                player->getGameState() == PlayerGameState::Mowing)
+            {
+                startReset();
+            }
+        }
+    }
+
+  private:
+    void startReset()
+    {
+        totalTime = 0.0f;
+        resetTimerElapsed = 0.0f;
+        resetStackCount = (float)player->getPlayerMoveCount();
+        player->setGameState(PlayerGameState::Preparation);
+    }
+
+    void updateReset(float dt)
+    {
+        resetTimerElapsed += dt;
+        uint32_t current =
+            (uint32_t)gjt::lerp(resetStackCount, 0, resetTimerElapsed);
+
+        while (player->getPlayerMoveCount() > current)
+        {
+            player->undoMove();
         }
     }
 };

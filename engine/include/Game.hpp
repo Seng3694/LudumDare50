@@ -14,7 +14,7 @@ class Game
         const std::string &title, const uint32_t width, const uint32_t height);
     virtual ~Game(){}
 
-    template <typename T> void switchState(std::shared_ptr<T> instance);
+    template <typename T> void switchState(std::shared_ptr<T> instance, bool unloadPrevious = true);
 
     void run();
 

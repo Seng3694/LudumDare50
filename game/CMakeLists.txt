@@ -2,7 +2,9 @@ set(GAME_HEADERS
 	include/PlayState.hpp
 	include/LDGame.hpp
 	include/TileMap.hpp
+	include/Line.hpp
 	include/Maps.hpp
+	include/MapView.hpp
 	include/MapSelectionState.hpp
 	include/Player.hpp
 	include/ResourceBar.hpp
@@ -10,11 +12,13 @@ set(GAME_HEADERS
 	include/StringFormat.hpp
 	include/Score.hpp
 	include/Tiles.hpp
+	include/VictoryState.hpp
 )
 
 set(GAME_SOURCES
 	src/Main.cpp
 	src/Maps.cpp
+	src/MapView.cpp
 	src/SaveFileManager.cpp
 	src/StringFormat.cpp
 	src/TileMap.cpp

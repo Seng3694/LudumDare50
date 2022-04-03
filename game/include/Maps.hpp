@@ -28,6 +28,10 @@ extern sf::String map_3_name;
 extern uint8_t map_3[];
 extern sf::Vector2u map_3_spawn;
 
+extern sf::String map_4_name;
+extern uint8_t map_4[];
+extern sf::Vector2u map_4_spawn;
+
 const sf::String &get_map_name(Maps maps);
 const uint8_t const *get_map_data(Maps maps);
 const sf::Vector2u &get_map_spawn(Maps maps);

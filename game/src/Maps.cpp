@@ -42,6 +42,20 @@ uint8_t map_3[] =
     2,1,1,1,1,1,1,1,1,1,1,1};
 sf::Vector2u map_3_spawn = {5, 5};
 
+sf::String map_4_name = "The Debug";
+uint8_t map_4[] =  
+   {2,2,2,2,2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,2,2,1,1,
+    2,2,2,2,2,2,2,2,2,2,1,1};
+sf::Vector2u map_4_spawn = {9, 7};
+
 const sf::String &get_map_name(Maps maps)
 {
     switch (maps)
@@ -52,6 +66,8 @@ const sf::String &get_map_name(Maps maps)
         return map_2_name;
     case Maps::Map3:
         return map_3_name;
+    case Maps::Map4:
+        return map_4_name;
     default:
         return map_1_name;
     }
@@ -66,6 +82,8 @@ const uint8_t const *get_map_data(Maps maps)
         return map_2;
     case Maps::Map3:
         return map_3;
+    case Maps::Map4:
+        return map_4;
     default:
         return map_1;
     }
@@ -81,6 +99,8 @@ const sf::Vector2u &get_map_spawn(Maps maps)
         return map_2_spawn;
     case Maps::Map3:
         return map_3_spawn;
+    case Maps::Map4:
+        return map_4_spawn;
     default:
         return map_1_spawn;
     }

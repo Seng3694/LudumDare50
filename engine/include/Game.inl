@@ -6,9 +6,9 @@
 
 namespace gjt
 {
-template <typename T> void Game::switchState(std::shared_ptr<T> instance)
+template <typename T> void Game::switchState(std::shared_ptr<T> instance, bool unloadPrevious)
 {
-    if (currentState != nullptr)
+    if (currentState != nullptr && unloadPrevious)
     {
         currentState->unload();
     }
