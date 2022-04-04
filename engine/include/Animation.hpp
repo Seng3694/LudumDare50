@@ -70,6 +70,11 @@ class Animation
         return this->reverse;
     }
 
+    inline AnimationState &getAnimationState()
+    {
+        return this->state;
+    }
+
     void update(float dt);
 
     sf::IntRect getCurrentFrameTextureRectangle() const;

@@ -18,5 +18,6 @@ enum class TileType : uint8_t
     ResourceBarLeftEmpty,
     ResourceBarCenterEmpty,
     Star,
-    StarEmpty
+    StarEmpty,
+    Button
 };

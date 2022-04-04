@@ -3,8 +3,6 @@
 #include <SFML/Graphics.hpp>
 #include <cstdio>
 
-#include <imgui.h>
-
 #include "Animation.hpp"
 #include "AudioManager.hpp"
 #include "ContentManager.hpp"
@@ -20,6 +18,8 @@
 #include "SaveFileManager.hpp"
 #include "VictoryState.hpp"
 #include "TransitionState.hpp"
+#include <functional>
+#include <deque>
 
 class MapSelectionState;
 
@@ -27,12 +27,9 @@ class MapSelectionState;
 
 #define TILE_SCALING (4.0f)
 
-struct PlayStateDebugUiContext
+enum class MownGrassAnimation
 {
-    sf::Vector2f mapPosition;
-    sf::Vector2i cameraCenter;
-    sf::Vector2f grassMownBarPosition;
-    float mapScale;
+    Default,
 };
 
 typedef ResourceBar<
@@ -50,11 +47,13 @@ class PlayState : public gjt::GameState
   private:
     std::shared_ptr<sf::Font> font;
     std::shared_ptr<gjt::Tileset> tileset;
+    std::shared_ptr<gjt::Tileset> grassTiles;
     std::shared_ptr<TileMap> map;
     std::shared_ptr<Player> player;
     std::shared_ptr<EnergyBar> energyBar;
     std::shared_ptr<GrassMownBar> grassMownBar;
     std::shared_ptr<SaveData> saveData;
+    std::deque<gjt::AnimatedSprite<MownGrassAnimation>> animations;
     sf::Text totalTimeText;
     sf::Text mapNameText;
     char totalTimeTextBuffer[10];
@@ -67,12 +66,9 @@ class PlayState : public gjt::GameState
     sf::Vector2u mapSpawn;
     const Maps mapID;
 
-    bool enableDebug;
-    PlayStateDebugUiContext context;
-
   public:
     PlayState(const Maps mapID)
-        : font(nullptr), map(nullptr), player(nullptr), saveData(nullptr), enableDebug(false), totalTime(0.0f), mapID(mapID)
+        : font(nullptr), map(nullptr), player(nullptr), saveData(nullptr), totalTime(0.0f), mapID(mapID)
     {
         mapData = get_map_data(mapID);
         mapName = get_map_name(mapID);
@@ -90,6 +86,10 @@ class PlayState : public gjt::GameState
         tileset = std::make_shared<gjt::Tileset>(
             content->loadFromFile<sf::Texture>("content/tiles.png"), 16, 16);
 
+        grassTiles = std::make_shared<gjt::Tileset>(
+            content->loadFromFile<sf::Texture>("content/mown_grass.png"), 32,
+            32);
+
         map = std::make_shared<TileMap>(tileset, 12, 10, mapData);
 
         map->setPosition(0, 8);
@@ -103,6 +103,33 @@ class PlayState : public gjt::GameState
                     content->loadFromFile<sf::Texture>("content/player.png"), 16, 16),
                 1, 0.1f, true));
         player->setOrigin(8, 8);
+
+        player->setGrassMownCallback([&](uint32_t x, uint32_t y) {
+            auto audio = services->resolve<gjt::AudioManager<AudioFiles>>();
+            audio->setVolume(AudioFiles::Mow, 20.0f);
+            audio->play(AudioFiles::Mow);
+
+            auto sprite = gjt::AnimatedSprite<MownGrassAnimation>();
+            auto animation =
+                std::make_shared<gjt::Animation>(grassTiles, 5, 0.8f);
+            animation->start();
+            sprite.addAnimation(
+                MownGrassAnimation::Default,
+                animation);
+            sprite.setOrigin(16, 16);
+
+            sf::Vector2f origin = sprite.getOrigin();
+            sprite.setPosition(
+                map->getTransform().transformPoint(
+                x * 16 + origin.x / 2.0f, y * 16 + origin.y / 2.0f));
+            animations.push_back(sprite);
+        });
+
+        player->setPlayerHitCallback([&](void) {
+            auto audio = services->resolve<gjt::AudioManager<AudioFiles>>();
+            audio->setVolume(AudioFiles::Hit, 50.0f);
+            audio->play(AudioFiles::Hit);
+        });
 
         player->setMapPosition(mapSpawn);
         player->update(0.0f);
@@ -151,7 +178,11 @@ class PlayState : public gjt::GameState
         resetTimer = 1.0f;
         resetTimerElapsed = resetTimer;
 
-        enableDebug = false;
+        auto audio = services->resolve<gjt::AudioManager<AudioFiles>>();
+
+        audio->stop(AudioFiles::Menu);
+        audio->queue(AudioFiles::Playstate, true);
+        audio->play(AudioFiles::Playstate);
     }
 
     virtual void update(float dt) override
@@ -161,6 +192,15 @@ class PlayState : public gjt::GameState
 
         StringFormat::formatSeconds(totalTime, totalTimeTextBuffer, 10);
         totalTimeText.setString(totalTimeTextBuffer);
+
+        while (animations.size() > 0 
+            && animations[0].getCurrentAnimation()->getAnimationState() != gjt::AnimationState::Running)
+        {
+            animations.pop_front();
+        }
+
+        for (auto &anim : animations)
+            anim.update(dt);
 
         if (player->getHp() == 0)
         {
@@ -176,9 +216,6 @@ class PlayState : public gjt::GameState
             resetTimerElapsed = resetTimer;
             player->update(dt);
         }
-
-        context.mapPosition = map->getPosition();
-        context.mapScale = map->getScale().x;
 
         if (player->getGrassMown() == map->getMaxScore())
         {
@@ -205,41 +242,6 @@ class PlayState : public gjt::GameState
         }
     }
 
-    virtual void ui(float dt) override
-    {
-        if (enableDebug)
-        {
-            ImGui::SetNextWindowSize(
-                ImVec2(400, 400), ImGuiCond_::ImGuiCond_Once);
-            if (ImGui::Begin("debug"))
-            {
-                if (ImGui::SliderFloat2("map pos", &context.mapPosition.x, 0, game->getWindowWidth()))
-                    map->setPosition(context.mapPosition);
-                if (ImGui::SliderFloat("map scale", &context.mapScale, 0.1f, 6.0f))
-                    map->setScale(context.mapScale, context.mapScale);
-
-                ImGui::LabelText("hp", "%d", player->getHp());
-                
-                sf::View view = game->getView();
-                context.cameraCenter.x = view.getCenter().x;
-                context.cameraCenter.y = view.getCenter().y;
-                if (ImGui::SliderInt2("cam pos", &context.cameraCenter.x, 0, 1000))
-                {
-                    view.setCenter(context.cameraCenter.x, context.cameraCenter.y);
-                    game->setView(view);
-                }
-
-                context.grassMownBarPosition = grassMownBar->getPosition();
-                if (ImGui::SliderFloat2("grassmownbarpos", &context.grassMownBarPosition.x, -100, 300))
-                {
-                    grassMownBar->setPosition(context.grassMownBarPosition);
-                }
-
-                ImGui::End();
-            }
-        }
-    }
-
     virtual void draw(
         float dt, sf::RenderTarget &target,
         sf::RenderStates states = sf::RenderStates()) override
@@ -253,6 +255,10 @@ class PlayState : public gjt::GameState
 
         target.draw(*map, states);
         target.draw(*player, states);
+
+        for (auto &anim : animations)
+            target.draw(anim, states);
+
         target.draw(*energyBar, states);
         target.draw(*grassMownBar, states);
 
@@ -265,11 +271,6 @@ class PlayState : public gjt::GameState
     {
         if (e.type == sf::Event::KeyPressed)
         {
-            if (e.key.code == sf::Keyboard::Key::D && e.key.control)
-            {
-                enableDebug = !enableDebug;
-                return;
-            }
             if (resetTimerElapsed != resetTimer)
                 return;
 
@@ -295,6 +296,12 @@ class PlayState : public gjt::GameState
             }
             if (e.key.code == sf::Keyboard::Escape)
             {
+                auto audio =
+                    services->resolve<gjt::AudioManager<AudioFiles>>();
+                audio->stop(AudioFiles::Playstate);
+                audio->queue(AudioFiles::Menu, true);
+                audio->play(AudioFiles::Menu);
+
                 game->switchState(
                     std::static_pointer_cast<gjt::GameState, TransitionState>(
                         std::make_shared<TransitionState>(
@@ -302,9 +309,6 @@ class PlayState : public gjt::GameState
                             std::make_shared<MapSelectionState>(
                                 (uint32_t)mapID))));
 
-                /*game->switchState(std::static_pointer_cast<
-                                  gjt::GameState, MapSelectionState>(
-                    std::make_shared<MapSelectionState>((uint32_t)mapID)));*/
                 return;
             }
             if (e.key.code == sf::Keyboard::R &&

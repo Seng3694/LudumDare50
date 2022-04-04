@@ -1,4 +1,5 @@
 set(GAME_HEADERS
+	include/AudioFiles.hpp
 	include/PlayState.hpp
 	include/LDGame.hpp
 	include/TileMap.hpp
@@ -15,6 +16,7 @@ set(GAME_HEADERS
 	include/TitleState.hpp
 	include/TransitionState.hpp
 	include/VictoryState.hpp
+	include/VolumeBar.hpp
 )
 
 set(GAME_SOURCES
@@ -24,10 +26,11 @@ set(GAME_SOURCES
 	src/SaveFileManager.cpp
 	src/StringFormat.cpp
 	src/TileMap.cpp
+	src/VolumeBar.cpp
 )
 
 include_directories(include)
-add_executable(${PROJECT_NAME} ${GAME_HEADERS} ${GAME_SOURCES})
+add_executable(${PROJECT_NAME} ${GAME_HEADERS} ${GAME_SOURCES} "${CMAKE_SOURCE_DIR}/content/res.rc")
 target_link_libraries(${PROJECT_NAME} gjt_engine)
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/content)
@@ -38,3 +41,9 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/content)
 				${CMAKE_CURRENT_BINARY_DIR}/content
 	)
 endif()
+
+add_custom_command(
+		TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${SFML_DIR}/../../../bin/openal32.dll"
+                $<TARGET_FILE_DIR:${PROJECT_NAME}>)

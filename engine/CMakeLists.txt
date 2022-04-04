@@ -27,4 +27,4 @@ if(SFML_FOUND)
 	target_link_libraries(gjt_engine sfml-system sfml-graphics sfml-window sfml-audio)
 endif()
 
-target_link_libraries(gjt_engine imgui)
+#target_link_libraries(gjt_engine imgui)

@@ -11,6 +11,7 @@ struct SaveData
   public:
     SaveData();
     //settings for later
+    float generalVolume;
     Score scores[SAVE_DATA_MAP_COUNT];
 };
 

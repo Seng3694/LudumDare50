@@ -1,6 +1,6 @@
 #include "Maps.hpp"
 
-sf::String map_1_name = "The Cross";
+sf::String map_1_name = "Cross";
 uint8_t map_1[] =  
    {1,1,1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,
@@ -14,7 +14,7 @@ uint8_t map_1[] =
     1,1,1,1,1,1,1,1,1,1,1,1};
 sf::Vector2u map_1_spawn = {5, 4};
 
-sf::String map_2_name = "The Catwalk";
+sf::String map_2_name = "Catwalk";
 uint8_t map_2[] =  
    {2,1,1,1,1,1,1,1,1,1,1,1,
     2,1,3,1,1,1,3,1,1,1,1,1,
@@ -28,7 +28,7 @@ uint8_t map_2[] =
     2,1,1,1,1,1,1,1,1,1,1,1};
 sf::Vector2u map_2_spawn = {5, 5};
 
-sf::String map_3_name = "Map 3";
+sf::String map_3_name = "Scattered";
 uint8_t map_3[] =  
    {3,1,1,3,1,1,1,1,3,1,1,3,
     1,1,1,1,1,3,3,1,1,1,1,1,
@@ -42,7 +42,7 @@ uint8_t map_3[] =
     3,1,1,3,1,1,1,1,3,1,1,3};
 sf::Vector2u map_3_spawn = {5, 5};
 
-sf::String map_4_name = "The Crab";
+sf::String map_4_name = "Crab";
 uint8_t map_4[] =  
    {1,1,1,1,1,1,1,1,1,1,1,1,
     1,3,1,1,1,1,1,1,1,1,3,1,
@@ -56,7 +56,7 @@ uint8_t map_4[] =
     1,1,1,1,1,1,1,1,1,1,1,1};
 sf::Vector2u map_4_spawn = {5, 3};
 
-sf::String map_5_name = "The Lonely Rock";
+sf::String map_5_name = "Lonely";
 uint8_t map_5[] =  
    {2,2,2,2,2,2,2,2,2,2,2,2,
     2,1,1,1,1,1,1,1,1,1,1,2,
@@ -70,7 +70,7 @@ uint8_t map_5[] =
     2,2,2,2,2,2,2,2,2,2,2,2};
 sf::Vector2u map_5_spawn = {0, 5};
 
-sf::String map_6_name = "The Stairs";
+sf::String map_6_name = "Stairs";
 uint8_t map_6[] =  
    {1,1,1,1,1,3,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,
@@ -84,7 +84,7 @@ uint8_t map_6[] =
     1,1,1,1,1,1,1,1,1,1,1,1};
 sf::Vector2u map_6_spawn = {5, 7};
 
-sf::String map_7_name = "Map 7";
+sf::String map_7_name = "Ledge";
 uint8_t map_7[] =  
    {2,2,2,1,1,1,1,1,1,1,1,1,
     2,2,2,1,1,1,1,3,1,1,1,1,
@@ -98,7 +98,7 @@ uint8_t map_7[] =
     1,1,1,1,1,1,1,1,1,1,1,1};
 sf::Vector2u map_7_spawn = {1, 1};
 
-sf::String map_8_name = "Map 8";
+sf::String map_8_name = "Neglected";
 uint8_t map_8[] =  
    {3,1,1,3,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,3,1,
@@ -112,7 +112,7 @@ uint8_t map_8[] =
     1,1,2,2,2,2,2,2,2,2,1,1};
 sf::Vector2u map_8_spawn = {2, 7};
 
-sf::String map_9_name = "The Unkempt";
+sf::String map_9_name = "Unkempt";
 uint8_t map_9[] =  
    {2,2,2,2,3,3,3,3,2,2,2,2,
     2,1,1,1,1,1,1,1,1,1,1,2,

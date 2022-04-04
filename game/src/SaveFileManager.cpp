@@ -3,7 +3,8 @@
 #include <iostream>
 #include <fstream>
 
-SaveData::SaveData()
+SaveData::SaveData() 
+    : generalVolume(1.0f)
 { 
     for (uint32_t i = 0; i < SAVE_DATA_MAP_COUNT; ++i)
     {

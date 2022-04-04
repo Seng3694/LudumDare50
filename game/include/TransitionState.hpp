@@ -3,8 +3,6 @@
 #include <SFML/Graphics.hpp>
 #include <cstdio>
 
-#include <imgui.h>
-
 #include "Animation.hpp"
 #include "AudioManager.hpp"
 #include "ContentManager.hpp"
@@ -22,6 +20,8 @@
 #include <cassert>
 #include <stack>
 #include "MapView.hpp"
+#include <AudioManager.hpp>
+#include "AudioFiles.hpp"
 
 enum class TransitionStates
 {
@@ -83,6 +83,11 @@ class TransitionState : public gjt::GameState
         bannerRightSprite.setTexture(*bannerRightTexture);
         bannerRightSprite.setPosition(bannerRightStart);
 
+        
+        auto audio = services->resolve<gjt::AudioManager<AudioFiles>>();
+        audio->setVolume(AudioFiles::Wush, 30.0f);
+        audio->play(AudioFiles::Wush);
+
         nextState->game = game;
         nextState->services = services;
     }
@@ -131,6 +136,11 @@ class TransitionState : public gjt::GameState
             {
                 closedTimerElapsed = 0.0f;
                 state = TransitionStates::Opening;
+
+                auto audio =
+                    services->resolve<gjt::AudioManager<AudioFiles>>();
+                audio->setVolume(AudioFiles::Wush, 30.0f);
+                audio->play(AudioFiles::Wush);
             }
             break;
         }

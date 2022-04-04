@@ -62,13 +62,13 @@ inline float angle(const sf::Vector2f& a, const sf::Vector2f& b)
 }
 
 template <typename T>
-inline float clamp(const T value, const T min, const T max)
+inline T clamp(const T value, const T min, const T max)
 {
     return value > max ? max : value < min ? min : value;
 }
 
 template <typename T>
-inline float wrap(T value, const T min, const T max)
+inline T wrap(T value, const T min, const T max)
 {
     while (value > max)
         value = min + (value - max - 1);

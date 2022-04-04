@@ -41,7 +41,7 @@ class AudioManager
 private:
     std::unordered_map<ResourceKey, sf::Sound> sounds;
     std::unordered_map<ResourceKey, float> volumes;
-    std::queue<sf::Sound const *> soundQueue;
+    std::queue<sf::Sound*> soundQueue;
     float generalVolume;
 };
 

@@ -8,7 +8,6 @@
 #include <cassert>
 #include "Tiles.hpp"
 
-
 class TileMap : public sf::Transformable, public sf::Drawable
 {
   public:

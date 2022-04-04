@@ -3,8 +3,6 @@
 #include <SFML/Graphics.hpp>
 #include <cstdio>
 
-#include <imgui.h>
-
 #include "Animation.hpp"
 #include "AudioManager.hpp"
 #include "ContentManager.hpp"
@@ -22,18 +20,13 @@
 #include <cassert>
 #include "MapView.hpp"
 #include "TransitionState.hpp"
+#include <AudioManager.hpp>
+#include "AudioFiles.hpp"
 
 #include "Maps.hpp"
 
-class PlayState;
 class TitleState;
-
-struct MapSelectionDebugUiContext
-{
-    float mapSelectionOffsetLeft;
-    float mapSelectionOffsetTop;
-    float mapSelectionSpacing;
-};
+class PlayState;
 
 class MapSelectionState : public gjt::GameState
 {
@@ -54,9 +47,6 @@ class MapSelectionState : public gjt::GameState
     int32_t currentPage;
     int32_t selectedIndex;
 
-    MapSelectionDebugUiContext context;
-    bool enableDebug;
-
     MapSelectionState(const int32_t startIndex = 0) : selectedIndex(startIndex)
     {
     }
@@ -68,7 +58,7 @@ class MapSelectionState : public gjt::GameState
             content->loadFromFile<sf::Font>("content/monogram-extended.ttf");
 
         saveData = services->resolve<SaveFileManager>()->load();
-
+        
         headerText.setFont(*font);
         headerText.setCharacterSize(60);
         headerText.setStyle(sf::Text::Bold);
@@ -113,39 +103,12 @@ class MapSelectionState : public gjt::GameState
                 services, tm, saveData->scores[(uint32_t)i]));
         }
 
-        enableDebug = false;
         currentPage = 0;
         game->setClearColor(sf::Color(0x1d2b53ff));
     }
 
     virtual void update(float dt) override
     {
-    }
-
-    virtual void ui(float dt) override
-    {
-        if (enableDebug)
-        {
-            ImGui::SetNextWindowSize(
-                ImVec2(400, 400), ImGuiCond_::ImGuiCond_Once);
-            if (ImGui::Begin("debug"))
-            {
-                if (ImGui::SliderFloat(
-                        "offset left", &mapSelectionOffsetLeft, 0, 300))
-                {
-                }
-                if (ImGui::SliderFloat(
-                        "offset top", &mapSelectionOffsetTop, 0, 300))
-                {
-                }
-                if (ImGui::SliderFloat(
-                        "spacing", &mapSelectionSpacing, 0, 300))
-                {
-                }
-
-                ImGui::End();
-            }
-        }
     }
 
     virtual void draw(
@@ -175,7 +138,7 @@ class MapSelectionState : public gjt::GameState
                        mapView->getPixelWidth() / 2.0f;
                 break;
             case 2://right align
-                xPos = renderTexture.getSize().x - mapView->getPixelWidth();
+                xPos = renderTexture.getSize().x - mapView->getPixelWidth() - 0.0f;
                 break;
             }
 
@@ -189,14 +152,18 @@ class MapSelectionState : public gjt::GameState
                        mapView->getPixelHeight() / 2.0f;
                 break;
             case 2: // bottom align
-                yPos = renderTexture.getSize().y - mapView->getPixelHeight();
+                yPos = renderTexture.getSize().y - mapView->getPixelHeight() - 0.0f;
                 break;
             }
 
             if (selectedIndex == i)
+            {
                 mapView->setFrameColor(sf::Color(0xffa300ff));
+            }
             else
-                mapView->setFrameColor(sf::Color(0xab5236ff));
+            {
+                mapView->setFrameColor(sf::Color(0x5f574fff));
+            }
 
             mapView->setPosition(xPos, yPos);
             renderTexture.draw(*mapView);
@@ -215,11 +182,6 @@ class MapSelectionState : public gjt::GameState
     {
         if (e.type == sf::Event::KeyPressed)
         {
-            if (e.key.code == sf::Keyboard::Key::D && e.key.control)
-            {
-                enableDebug = !enableDebug;
-                return;
-            }
             if (e.key.code == sf::Keyboard::Key::Escape)
             {
                 game->switchState(
@@ -276,6 +238,11 @@ class MapSelectionState : public gjt::GameState
                 mapNameText.setPosition(
                     game->getWindowWidth() / 2.0f,
                     game->getWindowHeight() - 45.0f);
+
+                auto audio =
+                    services->resolve<gjt::AudioManager<AudioFiles>>();
+                audio->setVolume(AudioFiles::Select, 50.0f);
+                audio->play(AudioFiles::Select);
             }
         }
     }

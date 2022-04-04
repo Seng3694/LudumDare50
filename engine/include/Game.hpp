@@ -52,6 +52,11 @@ class Game
     {
         window.close();
     }
+    inline void setWindowIcon(std::shared_ptr<sf::Image> image)
+    {
+        window.setIcon(
+            image->getSize().x, image->getSize().y, image->getPixelsPtr());
+    }
 
   protected:
     sf::RenderWindow window;

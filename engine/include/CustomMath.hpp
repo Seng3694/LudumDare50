@@ -25,10 +25,10 @@ inline float deg_to_rad(const float deg);
 inline float angle(const sf::Vector2f &a, const sf::Vector2f &b);
 
 template <typename T>
-inline float clamp(const T value, const T min, const T max);
+inline T clamp(const T value, const T min, const T max);
 
 template <typename T>
-inline float wrap(const T value, const T min, const T max);
+inline T wrap(const T value, const T min, const T max);
 
 } // namespace gjt
 

@@ -3,8 +3,6 @@
 #include <SFML/Graphics.hpp>
 #include <cstdio>
 
-#include <imgui.h>
-
 #include "Animation.hpp"
 #include "AudioManager.hpp"
 #include "ContentManager.hpp"
@@ -23,8 +21,11 @@
 #include <stack>
 #include "MapView.hpp"
 #include "TransitionState.hpp"
+#include <AudioManager.hpp>
+#include "AudioFiles.hpp"
 
 #include "Maps.hpp"
+
 
 class MapSelectionState;
 class PlayState;
@@ -60,7 +61,6 @@ class VictoryState : public gjt::GameState
     float newScoreDisplayTimerElapsed;
     bool hasNewScore;
     bool hasNewTime;
-    bool enableDebug;
 
     VictoryState(const Maps map, const std::vector<PlayerMove> &moves, const Score &oldScore, const Score &newScore)
         : oldScore(oldScore), newScore(newScore), map(map), moves(moves),
@@ -169,7 +169,6 @@ class VictoryState : public gjt::GameState
             game->getWindowHeight() / 2.0f -
                 bannerTexture->getSize().y / 2.0f);
 
-        enableDebug = false;
         game->setClearColor(sf::Color(0x1d2b53ff));
     }
 
@@ -224,20 +223,6 @@ class VictoryState : public gjt::GameState
         }
     }
 
-    virtual void ui(float dt) override
-    {
-        if (enableDebug)
-        {
-            ImGui::SetNextWindowSize(
-                ImVec2(400, 400), ImGuiCond_::ImGuiCond_Once);
-            if (ImGui::Begin("debug"))
-            {
-
-                ImGui::End();
-            }
-        }
-    }
-
     virtual void draw(
         float dt, sf::RenderTarget &target,
         sf::RenderStates states = sf::RenderStates()) override
@@ -270,12 +255,6 @@ class VictoryState : public gjt::GameState
     {
         if (e.type == sf::Event::KeyPressed)
         {
-            if (e.key.code == sf::Keyboard::Key::D && e.key.control)
-            {
-                enableDebug = !enableDebug;
-                return;
-            }
-
             if ((state == VictoryStates::RectangleSlide || state == VictoryStates::NewScoreDisplay) &&
                 e.key.code == sf::Keyboard::Key::Enter)
             {
@@ -292,8 +271,12 @@ class VictoryState : public gjt::GameState
                             std::make_shared<MapSelectionState>(
                                 (uint32_t)map))));
 
-                //game->switchState(
-                //    std::static_pointer_cast<gjt::GameState, MapSelectionState>(std::make_shared<MapSelectionState>((uint32_t)map)));
+                auto audio =
+                    services->resolve<gjt::AudioManager<AudioFiles>>();
+                audio->stop(AudioFiles::Playstate);
+                audio->queue(AudioFiles::Menu, true);
+                audio->play(AudioFiles::Menu);
+
                 return;
             }
             if (e.key.code == sf::Keyboard::Key::R)

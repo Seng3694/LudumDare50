@@ -3,8 +3,6 @@
 #include <SFML/Graphics.hpp>
 #include <cstdio>
 
-#include <imgui.h>
-
 #include "Animation.hpp"
 #include "AudioManager.hpp"
 #include "ContentManager.hpp"
@@ -26,13 +24,13 @@
 class TitleState : public gjt::GameState
 {
   public:
-    std::shared_ptr<sf::Texture> splashTexture;
     std::shared_ptr<sf::Texture> frameTexture;
     std::shared_ptr<sf::Font> font;
-    sf::Sprite splashSprite;
     sf::Sprite frameSprite;
     sf::Text pressStartText;
+    sf::Text titleText;
     float pulseTimer;
+    float wiggleTimer;
 
     virtual void load() override
     {
@@ -40,15 +38,8 @@ class TitleState : public gjt::GameState
         font =
             content->loadFromFile<sf::Font>("content/monogram-extended.ttf");
 
-        splashTexture = content->loadFromFile<sf::Texture>("content/splash.png");
-        splashTexture->setSmooth(true);
         frameTexture =
             content->loadFromFile<sf::Texture>("content/transition_banner_left.png");
-
-        splashSprite.setTexture(*splashTexture);
-        splashSprite.setOrigin(sf::Vector2f(splashTexture->getSize()) / 2.0f);
-        splashSprite.setPosition(
-            game->getWindowWidth() / 2.0f, game->getWindowHeight() / 2.0f);
 
         frameSprite.setTexture(*frameTexture);
         frameSprite.setScale(4.0f, 1.0f);
@@ -66,14 +57,33 @@ class TitleState : public gjt::GameState
         pressStartText.setPosition(
             game->getWindowWidth() / 2.0f - localBounds.left, game->getWindowHeight() - localBounds.top - 45.0f);
 
+        titleText.setFont(*font);
+        titleText.setCharacterSize(180);
+        titleText.setStyle(sf::Text::Bold);
+        titleText.setString("MOW BOT");
+        localBounds = titleText.getLocalBounds();
+        titleText.setOrigin(
+            localBounds.width / 2.0f, localBounds.height / 2.0f);
+        titleText.setOutlineThickness(2.0f * (180 / 36.0f));
+        titleText.setOutlineColor(sf::Color::Black);
+        titleText.setFillColor(sf::Color(0xffa300ff));
+        titleText.setPosition(
+            game->getWindowWidth() / 2.0f - localBounds.left,
+            game->getWindowHeight() / 2.0f - localBounds.top - 45.0f);
+
+        pulseTimer = 0.0f;
+        wiggleTimer = 0.0f;
+
         game->setClearColor(sf::Color(0x1d2b53ff));
     }
 
     virtual void update(float dt) override
     {
         pulseTimer += dt * 4.0f;
+        wiggleTimer += dt * 2.3f;
         const float cosinus = ((cosf(pulseTimer) + 1) / 12.0f) + 0.83333f;
-        splashSprite.setScale(1 * cosinus, 1 * cosinus);
+        titleText.setScale(1 * cosinus, 1 * cosinus);
+        titleText.setRotation(gjt::rad_to_deg(0.1f * sinf(wiggleTimer)));
     }
 
     virtual void draw(
@@ -81,7 +91,7 @@ class TitleState : public gjt::GameState
         sf::RenderStates states = sf::RenderStates()) override
     {
         target.draw(frameSprite, states);
-        target.draw(splashSprite, states);
+        target.draw(titleText, states);
         target.draw(pressStartText, states);
     }
 

@@ -6,6 +6,9 @@
 #include "TileMap.hpp"
 #include "Tiles.hpp"
 #include <stack>
+#include <AudioManager.hpp>
+#include "AudioFiles.hpp"
+#include <functional>
 
 enum class PlayerAnimationState
 {
@@ -85,9 +88,20 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
         gameState = state;
     }
 
+    inline void setGrassMownCallback(
+        std::function<void(uint32_t, uint32_t)> callback)
+    {
+        grassMownCallback = callback;
+    }
+
+    inline void setPlayerHitCallback(std::function<void(void)> callback)
+    {
+        playerHitCallback = callback;
+    }
+
     void moveTo(const MoveDirection direction)
     {
-        sf::Vector2u oldPostion = mapPosition;
+        sf::Vector2u oldPosition = mapPosition;
         sf::Vector2u position = mapPosition;
 
         switch (direction)
@@ -111,25 +125,7 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
         {
             TileType type = (TileType)map->getTile(position.x, position.y);
 
-            const sf::Vector2f direction = gjt::normalize(
-                sf::Vector2f(position) - sf::Vector2f(oldPostion));
-
-            if (direction.x > 0)
-                setTextureRect(
-                    getCurrentAnimation()->getTileset()->getTextureRect(
-                        (uint32_t)PlayerTiles::Right));
-            else if (direction.x < 0)
-                setTextureRect(
-                    getCurrentAnimation()->getTileset()->getTextureRect(
-                        (uint32_t)PlayerTiles::Left));
-            else if (direction.y > 0)
-                setTextureRect(
-                    getCurrentAnimation()->getTileset()->getTextureRect(
-                        (uint32_t)PlayerTiles::Down));
-            else if (direction.y < 0)
-                setTextureRect(
-                    getCurrentAnimation()->getTileset()->getTextureRect(
-                        (uint32_t)PlayerTiles::Up));
+            setFacingDirection(oldPosition, position);
 
             if (type != TileType::Boulder)
             {
@@ -138,7 +134,7 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
 
                 if (gameState == PlayerGameState::Mowing)
                 {
-                    moves.push({oldPostion, position, hp, type});
+                    moves.push({oldPosition, position, hp, type});
 
                     if (type == TileType::HighGrass)
                     {
@@ -146,11 +142,16 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
                             position.x, position.y,
                             TileType::LowGrass);
                         grassMown++;
-                        score = gjt::clamp<int32_t>(grassMown - (maxHp - hp), 0, map->getMaxScore());
+                        score = gjt::clamp<int32_t>(
+                            grassMown - (maxHp - hp), 0, map->getMaxScore());
+                        if (grassMownCallback)
+                            grassMownCallback(position.x, position.y);
                     }
                     else
                     {
                         hp = gjt::clamp<int32_t>(hp - 1, 0, 5);
+                        if (playerHitCallback)
+                            playerHitCallback();
                         score = gjt::clamp<int32_t>(
                             grassMown - (maxHp - hp), 0, map->getMaxScore());
                     }
@@ -183,6 +184,7 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
 
         
         
+        setFacingDirection(lastMove.oldPosition, lastMove.newPosition);
         setMapPosition(lastMove.oldPosition);
 
         return true;
@@ -217,10 +219,31 @@ class Player : public gjt::AnimatedSprite<PlayerAnimationState>
     std::stack<PlayerMove> moves;
     std::shared_ptr<TileMap> map;
     sf::Vector2u mapPosition;
+    std::function<void(uint32_t, uint32_t)> grassMownCallback;
+    std::function<void(void)> playerHitCallback;
     int32_t grassMown;
     int32_t score;
     PlayerGameState gameState;
     int32_t maxHp;
     int32_t hp;
 
+
+    void setFacingDirection(const sf::Vector2u oldPosition, const sf::Vector2u newPosition)
+    {
+        const sf::Vector2f direction = gjt::normalize(
+            sf::Vector2f(newPosition) - sf::Vector2f(oldPosition));
+
+        if (direction.x > 0)
+            setTextureRect(getCurrentAnimation()->getTileset()->getTextureRect(
+                (uint32_t)PlayerTiles::Right));
+        else if (direction.x < 0)
+            setTextureRect(getCurrentAnimation()->getTileset()->getTextureRect(
+                (uint32_t)PlayerTiles::Left));
+        else if (direction.y > 0)
+            setTextureRect(getCurrentAnimation()->getTileset()->getTextureRect(
+                (uint32_t)PlayerTiles::Down));
+        else if (direction.y < 0)
+            setTextureRect(getCurrentAnimation()->getTileset()->getTextureRect(
+                (uint32_t)PlayerTiles::Up));
+    }
 };
