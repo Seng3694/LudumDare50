@@ -31,7 +31,7 @@ set(GAME_SOURCES
 )
 
 include_directories(include)
-add_executable(${PROJECT_NAME} ${GAME_HEADERS} ${GAME_SOURCES} "${CMAKE_SOURCE_DIR}/content/res.rc")
+add_executable(${PROJECT_NAME} WIN32 ${GAME_HEADERS} ${GAME_SOURCES} "${CMAKE_SOURCE_DIR}/content/res.rc")
 target_link_libraries(${PROJECT_NAME} gjt_engine)
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/content)

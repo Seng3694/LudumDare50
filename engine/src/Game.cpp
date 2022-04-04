@@ -15,6 +15,8 @@ Game::Game(
     window.create(
         sf::VideoMode(width, height), title,
         sf::Style::Close | sf::Style::Titlebar);
+    window.setVerticalSyncEnabled(true);
+    window.setFramerateLimit(60);
 }
 
 void Game::switchState(

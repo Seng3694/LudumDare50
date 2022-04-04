@@ -1,7 +1,7 @@
 #include "LDGame.hpp"
 #include "PlayState.hpp"
 
-#ifdef _NDEBUG
+#ifdef NDEBUG
 #include <windows.h>
 
 int WinMain(

@@ -131,7 +131,7 @@ class VictoryState : public gjt::GameState
         victoryText.setOutlineColor(sf::Color::Black);
         victoryText.setFillColor(sf::Color(0xffa300ff));
 
-        labelIndex = 0;
+        labelIndex = 1;
         labelActive = sf::Color(0xffa300ff);
         labelInactive = sf::Color(0x5f574fff);
 
@@ -147,7 +147,7 @@ class VictoryState : public gjt::GameState
             game->getWindowHeight() + localBounds.top - 110.0f);
         retryLabelText.setOutlineThickness(2.0f * (50.0f / 36.0f));
         retryLabelText.setOutlineColor(sf::Color::Black);
-        retryLabelText.setFillColor(labelActive);
+        retryLabelText.setFillColor(labelInactive);
 
         exitLabelText.setFont(*font);
         exitLabelText.setCharacterSize(50.0f);
@@ -161,7 +161,7 @@ class VictoryState : public gjt::GameState
             game->getWindowHeight() + localBounds.top - 110.0f);
         exitLabelText.setOutlineThickness(2.0f * (50.0f / 36.0f));
         exitLabelText.setOutlineColor(sf::Color::Black);
-        exitLabelText.setFillColor(labelInactive);
+        exitLabelText.setFillColor(labelActive);
 
         newScoreText.setFont(*font);
         newScoreText.setCharacterSize(120);
