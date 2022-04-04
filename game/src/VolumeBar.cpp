@@ -1,17 +1,26 @@
 #include "VolumeBar.hpp"
 #include "CustomMath.hpp"
+#include "Tiles.hpp"
 
 VolumeBar::VolumeBar(
     std::shared_ptr<gjt::AudioManager<AudioFiles>> audioManager,
     std::shared_ptr<sf::Texture> volumeBarTexture,
-    std::shared_ptr<sf::Texture> volumeBarPartTexture, const float fadeTimer)
+    std::shared_ptr<sf::Texture> volumeBarPartTexture,
+    std::shared_ptr<gjt::Tileset> tiles, const float fadeTimer)
     : audioManager(audioManager), volumeBarTexture(volumeBarTexture),
       volumeBarPartTexture(volumeBarPartTexture),
-      state(VolumeBarState::Invisible), fadeTimer(fadeTimer),
+      tiles(tiles), state(VolumeBarState::Invisible), fadeTimer(fadeTimer), 
       fadeTimerElapsed(fadeTimer), activeTimer(0.2f), activeTimerElapsed(activeTimer)
 {
-    volume = audioManager->getGeneralVolume() * 12; //0-12 instead of 0.0-1.0
+    volume = audioManager->getGeneralVolume() * 12; // 0-12 instead of 0.0-1.0
     volumeBarSprite.setTexture(*volumeBarTexture);
+
+    speakerSprite.setTexture(*tiles->getTexture());
+    speakerSprite.setTextureRect(tiles->getTextureRect(
+        (uint32_t)(volume > 0 ? TileType::SpeakerOn : TileType::SpeakerOff)));
+    speakerSprite.setScale(2.0f, 2.0f);
+    speakerSprite.setOrigin(8.0f, 8.0f);
+    speakerSprite.setPosition(30.0f, 250.0f);
 }
 
 void VolumeBar::increaseVolume()
@@ -21,6 +30,9 @@ void VolumeBar::increaseVolume()
     audioManager->setGeneralVolume(volume / 12.0f);
     state = VolumeBarState::Active;
     volumeBarSprite.setColor(sf::Color::White);
+    speakerSprite.setColor(sf::Color::White);
+    speakerSprite.setTextureRect(tiles->getTextureRect(
+        (uint32_t)(volume > 0 ? TileType::SpeakerOn : TileType::SpeakerOff)));
 }
 
 void VolumeBar::decreaseVolume()
@@ -30,6 +42,9 @@ void VolumeBar::decreaseVolume()
     audioManager->setGeneralVolume(volume / 12.0f);
     state = VolumeBarState::Active;
     volumeBarSprite.setColor(sf::Color::White);
+    speakerSprite.setColor(sf::Color::White);
+    speakerSprite.setTextureRect(tiles->getTextureRect(
+        (uint32_t)(volume > 0 ? TileType::SpeakerOn : TileType::SpeakerOff)));
 }
 
 void VolumeBar::update(float dt)
@@ -46,19 +61,20 @@ void VolumeBar::update(float dt)
         break;
     case VolumeBarState::Fading:
         fadeTimerElapsed += dt;
-        volumeBarSprite.setColor(sf::Color(
+        sf::Color newColor = sf::Color(
             0xff, 0xff, 0xff,
-            (uint8_t)((1.0f - (fadeTimerElapsed / fadeTimer)) * 0xff)));
+            (uint8_t)((1.0f - (fadeTimerElapsed / fadeTimer)) * 0xff));
+        volumeBarSprite.setColor(newColor);
+        speakerSprite.setColor(newColor);
 
         if (fadeTimerElapsed >= fadeTimer)
         {
             state = VolumeBarState::Invisible;
             volumeBarSprite.setColor(sf::Color::Transparent);
+            speakerSprite.setColor(sf::Color::Transparent);
         }
         break;
     }
-
-
 }
 
 void VolumeBar::draw(
@@ -70,6 +86,7 @@ void VolumeBar::draw(
     states.transform.combine(getTransform());
 
     target.draw(volumeBarSprite, states);
+    target.draw(speakerSprite, states);
 
     sf::Sprite volumeBarPartSprite(*volumeBarPartTexture);
 

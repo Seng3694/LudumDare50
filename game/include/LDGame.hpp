@@ -57,10 +57,11 @@ class LDGame : public gjt::Game
         content->loadFromFile<sf::Texture>("content/transition_banner_right.png");
         content->loadFromFile<sf::Texture>("content/volumebar.png");
         content->loadFromFile<sf::Texture>("content/volumebar_part.png");
+        content->loadFromFile<sf::Texture>("content/sfml-logo-small.png");
         setWindowIcon(content->loadFromFile<sf::Image>("content/mowbot.png"));
 
         auto audio = services.resolve<gjt::AudioManager<AudioFiles>>();
-        
+
         audio->createSound(AudioFiles::Hit, content->loadFromFile<sf::SoundBuffer>("content/hit.ogg"));
         audio->createSound(AudioFiles::Select, content->loadFromFile<sf::SoundBuffer>("content/select.ogg"));
         audio->createSound(AudioFiles::Mow, content->loadFromFile<sf::SoundBuffer>("content/mow.ogg"));
@@ -81,14 +82,16 @@ class LDGame : public gjt::Game
         volumeBar = std::make_shared<VolumeBar>(
             audio, volumeBarTexture,
             content->loadFromFile<sf::Texture>("content/volumebar_part.png"),
+            std::make_shared<gjt::Tileset>(
+                content->loadFromFile<sf::Texture>("content/tiles.png"), 16,
+                16),
             1.5f);
         volumeBar->setPosition(
             getWindowWidth() - volumeBarTexture->getSize().x - 16.0f,
             getWindowHeight() / 2.0f);
         volumeBar->setOrigin(0, volumeBarTexture->getSize().y / 2.0f);
 
-        switchState(
-            std::static_pointer_cast<gjt::GameState, TitleState>(
+        switchState(std::static_pointer_cast<gjt::GameState, TitleState>(
             std::make_shared<TitleState>()));
     }
 

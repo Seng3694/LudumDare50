@@ -1,5 +1,6 @@
 set(GAME_HEADERS
 	include/AudioFiles.hpp
+	include/CreditsState.hpp
 	include/PlayState.hpp
 	include/LDGame.hpp
 	include/TileMap.hpp
