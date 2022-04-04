@@ -177,12 +177,6 @@ class PlayState : public gjt::GameState
 
         resetTimer = 1.0f;
         resetTimerElapsed = resetTimer;
-
-        auto audio = services->resolve<gjt::AudioManager<AudioFiles>>();
-
-        audio->stop(AudioFiles::Menu);
-        audio->queue(AudioFiles::Playstate, true);
-        audio->play(AudioFiles::Playstate);
     }
 
     virtual void update(float dt) override

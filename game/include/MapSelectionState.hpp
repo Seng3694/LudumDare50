@@ -216,16 +216,18 @@ class MapSelectionState : public gjt::GameState
             }
             if (e.key.code == sf::Keyboard::Enter)
             {
+
+                auto audio = services->resolve<gjt::AudioManager<AudioFiles>>();
+                audio->stop(AudioFiles::Menu);
+                audio->queue(AudioFiles::Playstate, true);
+                audio->play(AudioFiles::Playstate);
+
                 game->switchState(
                     std::static_pointer_cast<gjt::GameState, TransitionState>(
                         std::make_shared<TransitionState>(
                             game->getCurrentState(),
                             std::make_shared<PlayState>(
                                 (Maps)selectedIndex))));
-
-                /*game->switchState(std::static_pointer_cast<
-                                  gjt::GameState, PlayState>(
-                    std::make_shared<PlayState>((Maps)selectedIndex)));*/
                 return;
             }
 

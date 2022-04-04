@@ -26,7 +26,6 @@
 
 #include "Maps.hpp"
 
-
 class MapSelectionState;
 class PlayState;
 
@@ -47,10 +46,13 @@ class VictoryState : public gjt::GameState
     std::shared_ptr<SaveData> saveData;
     std::vector<PlayerMove> moves;
     sf::Text victoryText;
-    sf::Text pressToContinueText;
     sf::Text newScoreText;
+    sf::Text retryLabelText;
+    sf::Text exitLabelText;
     sf::Sprite newScoreBannerLeftRectangle;
     sf::Sprite newScoreBannerRightRectangle;
+    sf::Color labelActive;
+    sf::Color labelInactive;
     VictoryStates state;
     Maps map;
     const Score oldScore;
@@ -59,10 +61,13 @@ class VictoryState : public gjt::GameState
     float rectangleSlideTimerElapsed;
     float newScoreDisplayTimer;
     float newScoreDisplayTimerElapsed;
+    int32_t labelIndex;
     bool hasNewScore;
     bool hasNewTime;
 
-    VictoryState(const Maps map, const std::vector<PlayerMove> &moves, const Score &oldScore, const Score &newScore)
+    VictoryState(
+        const Maps map, const std::vector<PlayerMove> &moves,
+        const Score &oldScore, const Score &newScore)
         : oldScore(oldScore), newScore(newScore), map(map), moves(moves),
           hasNewScore(false), hasNewTime(false),
           state(VictoryStates::AwaitingInput), rectangleSlideTimer(0.2f),
@@ -85,9 +90,8 @@ class VictoryState : public gjt::GameState
         mapView = std::make_shared<MapView>(
             services,
             std::make_shared<TileMap>(tileset, 12, 10, get_map_data(map)),
-            moves,
-            newScore);
-        
+            moves, newScore);
+
         mapView->setOrigin(
             mapView->getPixelWidth() / 2.0f, mapView->getPixelHeight() / 2.0f);
         mapView->setPosition(
@@ -106,7 +110,8 @@ class VictoryState : public gjt::GameState
             hasNewScore = true;
             state = VictoryStates::RectangleSlide;
         }
-        else if (newScore.value == oldScore.value && newScore.time < oldScore.time)
+        else if (
+            newScore.value == oldScore.value && newScore.time < oldScore.time)
         {
             saveData->scores[(uint32_t)map].time = newScore.time;
             services->resolve<SaveFileManager>()->save();
@@ -121,23 +126,42 @@ class VictoryState : public gjt::GameState
         sf::FloatRect localBounds = victoryText.getLocalBounds();
         victoryText.setOrigin(
             localBounds.width / 2.0f, localBounds.height / 2.0f);
-        victoryText.setPosition(
-            game->getWindowWidth() / 2.0f, -15.0f);
+        victoryText.setPosition(game->getWindowWidth() / 2.0f, -15.0f);
         victoryText.setOutlineThickness(2.0f * (120.0f / 36.0f));
         victoryText.setOutlineColor(sf::Color::Black);
         victoryText.setFillColor(sf::Color(0xffa300ff));
 
-        pressToContinueText.setFont(*font);
-        pressToContinueText.setCharacterSize(36);
-        pressToContinueText.setStyle(sf::Text::Bold);
-        pressToContinueText.setString("Press R to restart or Escape to go back");
-        localBounds = pressToContinueText.getLocalBounds();
-        pressToContinueText.setOrigin(
+        labelIndex = 0;
+        labelActive = sf::Color(0xffa300ff);
+        labelInactive = sf::Color(0x5f574fff);
+
+        retryLabelText.setFont(*font);
+        retryLabelText.setCharacterSize(50.0f);
+        retryLabelText.setStyle(sf::Text::Bold);
+        retryLabelText.setString("Retry");
+        localBounds = retryLabelText.getLocalBounds();
+        retryLabelText.setOrigin(
             localBounds.width / 2.0f, localBounds.height / 2.0f);
-        pressToContinueText.setPosition(game->getWindowWidth() / 2.0f, game->getWindowHeight() - localBounds.height - 50.0f);
-        pressToContinueText.setOutlineThickness(2.0f);
-        pressToContinueText.setOutlineColor(sf::Color::Black);
-        pressToContinueText.setFillColor(sf::Color(0xffa300ff));
+        retryLabelText.setPosition(
+            game->getWindowWidth() / 2.0f + localBounds.left - 180.0f,
+            game->getWindowHeight() + localBounds.top - 110.0f);
+        retryLabelText.setOutlineThickness(2.0f * (50.0f / 36.0f));
+        retryLabelText.setOutlineColor(sf::Color::Black);
+        retryLabelText.setFillColor(labelActive);
+
+        exitLabelText.setFont(*font);
+        exitLabelText.setCharacterSize(50.0f);
+        exitLabelText.setStyle(sf::Text::Bold);
+        exitLabelText.setString("Exit");
+        localBounds = exitLabelText.getLocalBounds();
+        exitLabelText.setOrigin(
+            localBounds.width / 2.0f, localBounds.height / 2.0f);
+        exitLabelText.setPosition(
+            game->getWindowWidth() / 2.0f + localBounds.left + 180.0f,
+            game->getWindowHeight() + localBounds.top - 110.0f);
+        exitLabelText.setOutlineThickness(2.0f * (50.0f / 36.0f));
+        exitLabelText.setOutlineColor(sf::Color::Black);
+        exitLabelText.setFillColor(labelInactive);
 
         newScoreText.setFont(*font);
         newScoreText.setCharacterSize(120);
@@ -156,12 +180,13 @@ class VictoryState : public gjt::GameState
             localBounds.width / 2.0f, localBounds.height / 2.0f);
         newScoreText.setFillColor(sf::Color(0xffa300ff));
 
-        bannerTexture =
-            content->loadFromFile<sf::Texture>("content/scrolling_rectangle.png");
+        bannerTexture = content->loadFromFile<sf::Texture>(
+            "content/scrolling_rectangle.png");
         newScoreBannerLeftRectangle.setTexture(*bannerTexture);
         newScoreBannerLeftRectangle.setPosition(
             (float)game->getWindowWidth() / -2.0f,
-            game->getWindowHeight() / 2.0f - bannerTexture->getSize().y / 2.0f);
+            game->getWindowHeight() / 2.0f -
+                bannerTexture->getSize().y / 2.0f);
 
         newScoreBannerRightRectangle.setTexture(*bannerTexture);
         newScoreBannerRightRectangle.setPosition(
@@ -176,8 +201,7 @@ class VictoryState : public gjt::GameState
     {
         switch (state)
         {
-        case VictoryStates::RectangleSlide: 
-        {
+        case VictoryStates::RectangleSlide: {
             rectangleSlideTimerElapsed += dt;
             if (rectangleSlideTimerElapsed >= rectangleSlideTimer)
                 state = VictoryStates::NewScoreDisplay;
@@ -203,8 +227,7 @@ class VictoryState : public gjt::GameState
 
             break;
         }
-        case VictoryStates::NewScoreDisplay: 
-        {
+        case VictoryStates::NewScoreDisplay: {
             newScoreDisplayTimerElapsed += dt;
             if (newScoreDisplayTimerElapsed >= newScoreDisplayTimer)
                 state = VictoryStates::AwaitingInput;
@@ -229,13 +252,13 @@ class VictoryState : public gjt::GameState
     {
         target.draw(*mapView, states);
         target.draw(victoryText, states);
-        target.draw(pressToContinueText, states);
+        target.draw(retryLabelText, states);
+        target.draw(exitLabelText, states);
 
         switch (state)
         {
         case VictoryStates::RectangleSlide:
-        case VictoryStates::NewScoreDisplay: 
-        {
+        case VictoryStates::NewScoreDisplay: {
             sf::RectangleShape shape;
             shape.setSize(
                 sf::Vector2f(game->getWindowWidth(), game->getWindowHeight()));
@@ -255,15 +278,68 @@ class VictoryState : public gjt::GameState
     {
         if (e.type == sf::Event::KeyPressed)
         {
-            if ((state == VictoryStates::RectangleSlide || state == VictoryStates::NewScoreDisplay) &&
+            if ((state == VictoryStates::RectangleSlide ||
+                 state == VictoryStates::NewScoreDisplay) &&
                 e.key.code == sf::Keyboard::Key::Enter)
             {
                 state = VictoryStates::AwaitingInput;
                 return;
             }
 
-            if (e.key.code == sf::Keyboard::Key::Enter || e.key.code == sf::Keyboard::Key::Space || e.key.code == sf::Keyboard::Escape)
+            int32_t index = labelIndex;
+            if (e.key.code == sf::Keyboard::Key::A ||
+                e.key.code == sf::Keyboard::Key::Left)
             {
+                labelIndex = gjt::wrap<int32_t>(labelIndex - 1, 0, 1);
+            }
+            if (e.key.code == sf::Keyboard::Key::D ||
+                e.key.code == sf::Keyboard::Key::Right)
+            {
+                labelIndex = gjt::wrap<int32_t>(labelIndex + 1, 0, 1);
+            }
+
+            if (index != labelIndex)
+            {
+                switch (labelIndex)
+                {
+                case 0:
+                    retryLabelText.setColor(labelActive);
+                    exitLabelText.setColor(labelInactive);
+                    break;
+                case 1:
+                    retryLabelText.setColor(labelInactive);
+                    exitLabelText.setColor(labelActive);
+                    break;
+                }
+                auto audio =
+                    services->resolve<gjt::AudioManager<AudioFiles>>();
+                audio->setVolume(AudioFiles::Select, 50.0f);
+                audio->play(AudioFiles::Select);
+            }
+
+            bool gotoMapSelection = false;
+            bool gotoPlayState = false;
+            if (e.key.code == sf::Keyboard::Enter)
+            {
+                switch (labelIndex)
+                {
+                case 0:
+                    gotoPlayState = true;
+                    break;
+                case 1:
+                    gotoMapSelection = true;
+                    break;
+                }
+            }
+
+            if (e.key.code == sf::Keyboard::Escape || gotoMapSelection)
+            {
+                auto audio =
+                    services->resolve<gjt::AudioManager<AudioFiles>>();
+                audio->stop(AudioFiles::Playstate);
+                audio->queue(AudioFiles::Menu, true);
+                audio->play(AudioFiles::Menu);
+
                 game->switchState(
                     std::static_pointer_cast<gjt::GameState, TransitionState>(
                         std::make_shared<TransitionState>(
@@ -271,26 +347,18 @@ class VictoryState : public gjt::GameState
                             std::make_shared<MapSelectionState>(
                                 (uint32_t)map))));
 
-                auto audio =
-                    services->resolve<gjt::AudioManager<AudioFiles>>();
-                audio->stop(AudioFiles::Playstate);
-                audio->queue(AudioFiles::Menu, true);
-                audio->play(AudioFiles::Menu);
-
                 return;
             }
-            if (e.key.code == sf::Keyboard::Key::R)
+            if (e.key.code == sf::Keyboard::Key::R || gotoPlayState)
             {
                 game->switchState(
                     std::static_pointer_cast<gjt::GameState, TransitionState>(
                         std::make_shared<TransitionState>(
                             game->getCurrentState(),
                             std::make_shared<PlayState>(map))));
-
-                /*game->switchState(std::static_pointer_cast<gjt::GameState, PlayState>(
-                    std::make_shared<PlayState>(map)));*/
                 return;
             }
+
         }
     }
 };
