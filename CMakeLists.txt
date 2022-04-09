@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(MowBot)
-set(SFML_STATIC_LIBRARIES TRUE)
+
+if(WIN32)
+	set(SFML_STATIC_LIBRARIES TRUE)
+endif()
 
 add_subdirectory(engine)
 add_subdirectory(game)

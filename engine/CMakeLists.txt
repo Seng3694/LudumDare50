@@ -20,11 +20,10 @@ set(ENGINE_SOURCES
 add_library(gjt_engine STATIC ${ENGINE_HEADERS} ${ENGINE_SOURCES})
 target_include_directories(gjt_engine PUBLIC include)
 
-find_package(SFML 2.5 COMPONENTS system graphics window audio REQUIRED)
+find_package(SFML 2.5 COMPONENTS system main graphics window audio REQUIRED)
 
 if(SFML_FOUND)
 	target_include_directories(gjt_engine PUBLIC ${SFML_DIR}/../../../include)
-	target_link_libraries(gjt_engine sfml-system sfml-graphics sfml-window sfml-audio)
+	target_link_libraries(gjt_engine sfml-system sfml-main sfml-graphics sfml-window sfml-audio)
 endif()
 
-#target_link_libraries(gjt_engine imgui)

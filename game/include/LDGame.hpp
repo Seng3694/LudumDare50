@@ -41,6 +41,9 @@ class LDGame : public gjt::Game
     virtual void load() override
     {
         gjt::Game::load();
+        
+        window.setKeyRepeatEnabled(false);
+
         services.registerInstance<SaveFileManager>(
             std::make_shared<SaveFileManager>("save.bin"));
         services.registerInstance<gjt::AudioManager<AudioFiles>>();

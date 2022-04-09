@@ -30,8 +30,14 @@ set(GAME_SOURCES
 	src/VolumeBar.cpp
 )
 
+if(WIN32)
+	add_executable(${PROJECT_NAME} WIN32 ${GAME_HEADERS} ${GAME_SOURCES} "${CMAKE_SOURCE_DIR}/content/res.rc")	
+else()
+	add_executable(${PROJECT_NAME} ${GAME_HEADERS} ${GAME_SOURCES} "${CMAKE_SOURCE_DIR}/content/res.rc")	
+endif()
+
 include_directories(include)
-add_executable(${PROJECT_NAME} WIN32 ${GAME_HEADERS} ${GAME_SOURCES} "${CMAKE_SOURCE_DIR}/content/res.rc")
+
 target_link_libraries(${PROJECT_NAME} gjt_engine)
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/content)
@@ -43,8 +49,10 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/content)
 	)
 endif()
 
-add_custom_command(
-		TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${SFML_DIR}/../../../bin/openal32.dll"
-                $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+if(WIN32)
+	add_custom_command(
+			TARGET ${PROJECT_NAME} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+					"${SFML_DIR}/../../../bin/openal32.dll"
+					$<TARGET_FILE_DIR:${PROJECT_NAME}>)
+endif()
