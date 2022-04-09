@@ -169,7 +169,7 @@ template <typename ResourceKey>
 void AudioManager<ResourceKey>::remove(const ResourceKey &key)
 {
     auto itr = sounds.find(key);
-    if (itr != sound.end())
+    if (itr != sounds.end())
     {
         itr->second.stop();
         update();
