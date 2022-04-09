@@ -13,7 +13,7 @@ class ResourceBar : public sf::Transformable, public sf::Drawable
 {
   public:
     ResourceBar(
-        std::shared_ptr<gjt::Tileset> ts, const int32_t const *v,
+        std::shared_ptr<gjt::Tileset> ts, const int32_t *v,
         const int32_t max)
         : tileset(ts), value(v), max(max)
     {
@@ -30,7 +30,7 @@ class ResourceBar : public sf::Transformable, public sf::Drawable
     }
 
   private:
-    const int32_t const *value;
+    const int32_t *value;
     const int32_t max;
     std::shared_ptr<gjt::Tileset> tileset;
 

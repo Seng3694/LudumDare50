@@ -152,7 +152,8 @@ const sf::String &get_map_name(Maps maps)
         return map_1_name;
     }
 }
-const uint8_t const *get_map_data(Maps maps)
+
+const uint8_t *get_map_data(Maps maps)
 {
     switch (maps)
     {

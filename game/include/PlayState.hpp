@@ -61,7 +61,7 @@ class PlayState : public gjt::GameState
     float resetTimer;
     float resetTimerElapsed;
     float resetStackCount;
-    const uint8_t const *mapData;
+    const uint8_t *mapData;
     sf::String mapName;
     sf::Vector2u mapSpawn;
     const Maps mapID;

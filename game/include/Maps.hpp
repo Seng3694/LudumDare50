@@ -53,5 +53,5 @@ extern uint8_t map_9[];
 extern sf::Vector2u map_9_spawn;
 
 const sf::String &get_map_name(Maps maps);
-const uint8_t const *get_map_data(Maps maps);
+const uint8_t *get_map_data(Maps maps);
 const sf::Vector2u &get_map_spawn(Maps maps);
