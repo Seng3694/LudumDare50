@@ -73,7 +73,7 @@ class MapSelectionState : public gjt::GameState
         mapNameText.setFont(*font);
         mapNameText.setCharacterSize(36);
         mapNameText.setStyle(sf::Text::Bold);
-        mapNameText.setString(map_1_name);
+        mapNameText.setString(get_map_name((Maps)selectedIndex));
         localBounds = mapNameText.getLocalBounds();
         mapNameText.setOrigin(
             localBounds.width / 2.0f, localBounds.height / 2.0f);
