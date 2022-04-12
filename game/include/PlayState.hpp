@@ -260,7 +260,8 @@ class PlayState : public gjt::GameState
     {
         if (e.type == sf::Event::KeyPressed)
         {
-            if (resetTimerElapsed != resetTimer)
+            if (resetTimerElapsed != resetTimer ||
+                player->getGrassMown() == map->getMaxScore())
                 return;
 
             if (e.key.code == sf::Keyboard::Key::D || 
