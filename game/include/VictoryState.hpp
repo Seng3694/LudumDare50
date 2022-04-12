@@ -39,6 +39,8 @@ enum class VictoryStates
 class VictoryState : public gjt::GameState
 {
   public:
+    sf::RenderTexture renderTexture;
+    sf::Sprite renderTextureSprite;
     std::shared_ptr<sf::Font> font;
     std::shared_ptr<gjt::Tileset> tileset;
     std::shared_ptr<sf::Texture> bannerTexture;
@@ -194,6 +196,13 @@ class VictoryState : public gjt::GameState
             game->getWindowHeight() / 2.0f -
                 bannerTexture->getSize().y / 2.0f);
 
+        renderTexture.create(game->getWindowWidth(), game->getWindowHeight());
+        renderTexture.clear(sf::Color(0x1d2b53ff));
+        renderTexture.draw(*mapView);
+        renderTexture.draw(victoryText);
+        renderTexture.display();
+        renderTextureSprite.setTexture(renderTexture.getTexture());
+
         game->setClearColor(sf::Color(0x1d2b53ff));
     }
 
@@ -250,8 +259,7 @@ class VictoryState : public gjt::GameState
         float dt, sf::RenderTarget &target,
         sf::RenderStates states = sf::RenderStates()) override
     {
-        target.draw(*mapView, states);
-        target.draw(victoryText, states);
+        target.draw(renderTextureSprite, states);
         target.draw(retryLabelText, states);
         target.draw(exitLabelText, states);
 

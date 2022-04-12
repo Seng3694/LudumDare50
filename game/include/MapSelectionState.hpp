@@ -30,12 +30,56 @@ class PlayState;
 
 class MapSelectionState : public gjt::GameState
 {
+  private:
+    void updateMapView(std::shared_ptr<MapView> mapView, sf::Vector2u bounds, int32_t page, int32_t i)
+    {
+        uint32_t x = (i % 3);
+        uint32_t y = (i / 3);
+        float xPos = 0.0f;
+        float yPos = 0.0f;
+
+        switch (x)
+        {
+        case 0: // left align
+            xPos = 0.0f;
+            break;
+        case 1: // center align
+            xPos = bounds.x / 2.0f -
+                    mapView->getPixelWidth() / 2.0f;
+            break;
+        case 2: // right align
+            xPos = bounds.x - mapView->getPixelWidth() -
+                    0.0f;
+            break;
+        }
+
+        switch (y)
+        {
+        case 0: // top align
+            yPos = 0.0f;
+            break;
+        case 1: // center align
+            yPos = bounds.y / 2.0f -
+                    mapView->getPixelHeight() / 2.0f;
+            break;
+        case 2: // bottom align
+            yPos = bounds.y - mapView->getPixelHeight() -
+                    0.0f;
+            break;
+        }
+
+        mapView->setFrameColor(sf::Color(0x5f574fff));
+        mapView->setPosition(xPos, yPos);
+    }
+
   public:
     std::shared_ptr<sf::Font> font;
     std::shared_ptr<gjt::Tileset> tileset;
     std::shared_ptr<SaveData> saveData;
     sf::RenderTexture renderTexture;
+    sf::Sprite renderTextureSprite;
     std::vector<std::shared_ptr<MapView>> mapViews;
+    std::shared_ptr<MapView> selectedMapView;
     sf::Text headerText;
     sf::Text mapNameText;
     char clearTimeBuffer[10];
@@ -105,6 +149,28 @@ class MapSelectionState : public gjt::GameState
 
         currentPage = 0;
         game->setClearColor(sf::Color(0x1d2b53ff));
+
+        renderTexture.clear(sf::Color::Transparent);
+        uint32_t mapStart = currentPage * 9;
+        uint32_t mapEnd = currentPage * 9 + mapViews.size();
+
+        for (uint32_t i = mapStart; i < mapEnd; ++i)
+        {
+            std::shared_ptr<MapView> mapView = mapViews[i];
+            updateMapView(mapView, renderTexture.getSize(), 0, i);
+            renderTexture.draw(*mapView);
+        }
+
+        renderTexture.display();
+        renderTextureSprite.setTexture(renderTexture.getTexture());
+        renderTextureSprite.setPosition(
+            mapSelectionOffsetLeft, mapSelectionOffsetTop);
+
+        selectedMapView = mapViews[selectedIndex];
+        updateMapView(
+            selectedMapView, renderTexture.getSize(), 0, selectedIndex);
+        selectedMapView->setFrameColor(sf::Color(0xffa300ff));
+        selectedMapView->move(mapSelectionOffsetLeft, mapSelectionOffsetTop);
     }
 
     virtual void update(float dt) override
@@ -115,65 +181,8 @@ class MapSelectionState : public gjt::GameState
         float dt, sf::RenderTarget &target,
         sf::RenderStates states = sf::RenderStates()) override
     {
-        renderTexture.clear(sf::Color::Transparent);
-        uint32_t mapStart = currentPage * 9;
-        uint32_t mapEnd = currentPage * 9 + mapViews.size();
-
-        for (uint32_t i = mapStart; i < mapEnd; ++i)
-        {
-            std::shared_ptr<MapView> mapView = mapViews[i];
-
-            uint32_t x = (i % 3);
-            uint32_t y = (i / 3);
-            float xPos = 0.0f;
-            float yPos = 0.0f;
-
-            switch (x)
-            {
-            case 0://left align
-                xPos = 0.0f;
-                break;
-            case 1://center align
-                xPos = renderTexture.getSize().x / 2.0f -
-                       mapView->getPixelWidth() / 2.0f;
-                break;
-            case 2://right align
-                xPos = renderTexture.getSize().x - mapView->getPixelWidth() - 0.0f;
-                break;
-            }
-
-           switch (y)
-            {
-            case 0: // top align
-                yPos = 0.0f;
-                break;
-            case 1: // center align
-                yPos = renderTexture.getSize().y / 2.0f -
-                       mapView->getPixelHeight() / 2.0f;
-                break;
-            case 2: // bottom align
-                yPos = renderTexture.getSize().y - mapView->getPixelHeight() - 0.0f;
-                break;
-            }
-
-            if (selectedIndex == i)
-            {
-                mapView->setFrameColor(sf::Color(0xffa300ff));
-            }
-            else
-            {
-                mapView->setFrameColor(sf::Color(0x5f574fff));
-            }
-
-            mapView->setPosition(xPos, yPos);
-            renderTexture.draw(*mapView);
-
-        }
-
-        renderTexture.display();
-        sf::Sprite s(renderTexture.getTexture());
-        s.setPosition(mapSelectionOffsetLeft, mapSelectionOffsetTop);
-        target.draw(s, states);
+        target.draw(renderTextureSprite, states);
+        target.draw(*selectedMapView, states);
         target.draw(headerText, states);
         target.draw(mapNameText, states);
     }
@@ -240,6 +249,14 @@ class MapSelectionState : public gjt::GameState
                 mapNameText.setPosition(
                     game->getWindowWidth() / 2.0f,
                     game->getWindowHeight() - 45.0f);
+
+                selectedMapView = mapViews[selectedIndex];
+                updateMapView(
+                    selectedMapView, renderTexture.getSize(), 0,
+                    selectedIndex);
+                selectedMapView->setFrameColor(sf::Color(0xffa300ff));
+                selectedMapView->move(
+                    mapSelectionOffsetLeft, mapSelectionOffsetTop);
 
                 auto audio =
                     services->resolve<gjt::AudioManager<AudioFiles>>();
