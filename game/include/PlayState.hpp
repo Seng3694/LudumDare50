@@ -5,7 +5,7 @@
 
 #include "Animation.hpp"
 #include "AudioManager.hpp"
-#include "ContentManager.hpp"
+#include "Content.hpp"
 #include "CustomMath.hpp"
 #include "GameState.hpp"
 #include "Animation.hpp"
@@ -77,18 +77,14 @@ class PlayState : public gjt::GameState
 
     virtual void load() override
     {
-        auto content = services->resolve<gjt::ContentManager>();
-        font =
-            content->loadFromFile<sf::Font>("content/monogram-extended.ttf");
+        auto content = services->resolve<GameContentManager>();
+        font = content->get<sf::Font>(Content::MonogramFont);
 
         saveData = services->resolve<SaveFileManager>()->load();
 
-        tileset = std::make_shared<gjt::Tileset>(
-            content->loadFromFile<sf::Texture>("content/tiles.png"), 16, 16);
+        tileset = content->get<gjt::Tileset>(Content::MapTilesTileset);
 
-        grassTiles = std::make_shared<gjt::Tileset>(
-            content->loadFromFile<sf::Texture>("content/mown_grass.png"), 32,
-            32);
+        grassTiles = content->get<gjt::Tileset>(Content::MownGrassTileset);
 
         map = std::make_shared<TileMap>(tileset, 12, 10, mapData);
 
@@ -99,8 +95,7 @@ class PlayState : public gjt::GameState
         player->addAnimation(
             PlayerAnimationState::Idle,
             std::make_shared<gjt::Animation>(
-                std::make_shared<gjt::Tileset>(
-                    content->loadFromFile<sf::Texture>("content/player.png"), 16, 16),
+                content->get<gjt::Tileset>(Content::MowBotTileset),
                 1, 0.1f, true));
         player->setOrigin(8, 8);
 

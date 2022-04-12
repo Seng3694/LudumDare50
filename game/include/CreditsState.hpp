@@ -5,7 +5,7 @@
 
 #include "Animation.hpp"
 #include "AudioManager.hpp"
-#include "ContentManager.hpp"
+#include "Content.hpp"
 #include "CustomMath.hpp"
 #include "GameState.hpp"
 #include "Animation.hpp"
@@ -44,9 +44,9 @@ class CreditsState : public gjt::GameState
 
     virtual void load() override
     {
-        auto content = services->resolve<gjt::ContentManager>();
+        auto content = services->resolve<GameContentManager>();
         font =
-            content->loadFromFile<sf::Font>("content/monogram-extended.ttf");
+            content->get<sf::Font>(Content::MonogramFont);
 
         headerTextColor = sf::Color(0xab5236ff);
         textColor = sf::Color(0xffa300ff);
@@ -151,7 +151,7 @@ class CreditsState : public gjt::GameState
             localBounds.top + 440.0f);
 
         auto sfmlTexture =
-            content->loadFromFile<sf::Texture>("content/sfml-logo-small.png");
+            content->get<sf::Texture>(Content::SFMLTexture);
         sfmlSprite.setTexture(*sfmlTexture);
         sfmlSprite.setScale(0.5f, 0.5f);
         sfmlSprite.setOrigin(sf::Vector2f(sfmlTexture->getSize()) / 2.0f);
@@ -159,8 +159,9 @@ class CreditsState : public gjt::GameState
             game->getWindowWidth() / 2.0f,
             (sfmlTexture->getSize().y / 2.0f) * 0.5f + 530.0f);
 
-        frameSprite.setTexture(*content->loadFromFile<sf::Texture>(
-            "content/transition_banner_left.png"));
+        frameSprite.setTexture(
+            *content->get<sf::Texture>(
+            Content::TransitionBannerLeftTexture));
         frameSprite.setScale(4.0f, 1.0f);
 
         game->setClearColor(sf::Color(0x1d2b53ff));

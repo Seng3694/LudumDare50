@@ -5,7 +5,7 @@
 
 #include "Animation.hpp"
 #include "AudioManager.hpp"
-#include "ContentManager.hpp"
+#include "Content.hpp"
 #include "CustomMath.hpp"
 #include "GameState.hpp"
 #include "Animation.hpp"
@@ -97,9 +97,8 @@ class MapSelectionState : public gjt::GameState
 
     virtual void load() override
     {
-        auto content = services->resolve<gjt::ContentManager>();
-        font =
-            content->loadFromFile<sf::Font>("content/monogram-extended.ttf");
+        auto content = services->resolve<GameContentManager>();
+        font = content->get<sf::Font>(Content::MonogramFont);
 
         saveData = services->resolve<SaveFileManager>()->load();
         
@@ -135,8 +134,7 @@ class MapSelectionState : public gjt::GameState
             game->getWindowHeight() - mapSelectionOffsetTop -
                 mapSelectionOffsetBottom);
         
-        tileset = std::make_shared<gjt::Tileset>(
-            content->loadFromFile<sf::Texture>("content/tiles.png"), 16, 16);
+        tileset = content->get<gjt::Tileset>(Content::MapTilesTileset);
 
         for (Maps i = Maps::Map1; i < Maps::Count; i = (Maps)((int)i + 1))
         {

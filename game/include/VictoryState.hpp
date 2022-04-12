@@ -5,7 +5,7 @@
 
 #include "Animation.hpp"
 #include "AudioManager.hpp"
-#include "ContentManager.hpp"
+#include "Content.hpp"
 #include "CustomMath.hpp"
 #include "GameState.hpp"
 #include "Animation.hpp"
@@ -80,14 +80,12 @@ class VictoryState : public gjt::GameState
 
     virtual void load() override
     {
-        auto content = services->resolve<gjt::ContentManager>();
-        font =
-            content->loadFromFile<sf::Font>("content/monogram-extended.ttf");
+        auto content = services->resolve<GameContentManager>();
+        font = content->get<sf::Font>(Content::MonogramFont);
 
         saveData = services->resolve<SaveFileManager>()->load();
 
-        tileset = std::make_shared<gjt::Tileset>(
-            content->loadFromFile<sf::Texture>("content/tiles.png"), 16, 16);
+        tileset = content->get<gjt::Tileset>(Content::MapTilesTileset);
 
         mapView = std::make_shared<MapView>(
             services,
@@ -182,8 +180,7 @@ class VictoryState : public gjt::GameState
             localBounds.width / 2.0f, localBounds.height / 2.0f);
         newScoreText.setFillColor(sf::Color(0xffa300ff));
 
-        bannerTexture = content->loadFromFile<sf::Texture>(
-            "content/scrolling_rectangle.png");
+        bannerTexture = content->get<sf::Texture>(Content::ScrollingRectangleTexture);
         newScoreBannerLeftRectangle.setTexture(*bannerTexture);
         newScoreBannerLeftRectangle.setPosition(
             (float)game->getWindowWidth() / -2.0f,

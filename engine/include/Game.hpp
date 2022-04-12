@@ -77,5 +77,3 @@ class Game
 };
 
 } // namespace gjt
-
-#include "Game.inl"

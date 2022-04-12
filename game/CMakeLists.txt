@@ -1,5 +1,6 @@
 set(GAME_HEADERS
 	include/AudioFiles.hpp
+	include/Content.hpp
 	include/CreditsState.hpp
 	include/PlayState.hpp
 	include/LDGame.hpp
@@ -8,6 +9,7 @@ set(GAME_HEADERS
 	include/Maps.hpp
 	include/MapView.hpp
 	include/MapSelectionState.hpp
+	include/Message.hpp
 	include/Player.hpp
 	include/ResourceBar.hpp
 	include/SaveFileManager.hpp
@@ -31,7 +33,7 @@ set(GAME_SOURCES
 )
 
 if(WIN32)
-	add_executable(${PROJECT_NAME} WIN32 ${GAME_HEADERS} ${GAME_SOURCES} "${CMAKE_SOURCE_DIR}/content/res.rc")	
+	add_executable(${PROJECT_NAME} ${GAME_HEADERS} ${GAME_SOURCES} "${CMAKE_SOURCE_DIR}/content/res.rc")	
 else()
 	add_executable(${PROJECT_NAME} ${GAME_HEADERS} ${GAME_SOURCES} "${CMAKE_SOURCE_DIR}/content/res.rc")	
 endif()

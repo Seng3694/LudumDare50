@@ -5,7 +5,7 @@
 
 #include "Animation.hpp"
 #include "AudioManager.hpp"
-#include "ContentManager.hpp"
+#include "Content.hpp"
 #include "CustomMath.hpp"
 #include "GameState.hpp"
 #include "Animation.hpp"
@@ -40,12 +40,11 @@ class TitleState : public gjt::GameState
 
     virtual void load() override
     {
-        auto content = services->resolve<gjt::ContentManager>();
-        font =
-            content->loadFromFile<sf::Font>("content/monogram-extended.ttf");
+        auto content = services->resolve<GameContentManager>();
+        font = content->get<sf::Font>(Content::MonogramFont);
 
         frameTexture =
-            content->loadFromFile<sf::Texture>("content/transition_banner_left.png");
+            content->get<sf::Texture>(Content::TransitionBannerLeftTexture);
 
         frameSprite.setTexture(*frameTexture);
         frameSprite.setScale(4.0f, 1.0f);

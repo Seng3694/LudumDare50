@@ -1,8 +1,6 @@
 #include "Game.hpp"
 
 #include <cassert>
-//#include <imgui.h>
-//#include <imgui-SFML.h>
 #include "AudioManager.hpp"
 #include "ContentManager.hpp"
 
@@ -48,20 +46,19 @@ void Game::run()
 
         while (window.pollEvent(e))
         {
-            //ImGui::SFML::ProcessEvent(window, e);
             if (e.type == sf::Event::Closed)
                 window.close();
             else
+            {
                 handleEvent(e, dtf);
+            }
         }
-        //ImGui::SFML::Update(window, dt);
 
         window.clear(clearColor);
 
         ui(dtf);
         update(dtf);
         draw(dtf, window);
-        //ImGui::SFML::Render(window);
 
         window.display();
     }
@@ -71,8 +68,6 @@ void Game::run()
 
 void Game::load()
 {
-    //ImGui::SFML::Init(window);
-    services.registerInstance<ContentManager>();
 }
 
 void Game::update(float dt)
@@ -101,6 +96,5 @@ void Game::handleEvent(const sf::Event &e, float dt)
 
 void Game::unload()
 {
-    //ImGui::SFML::Shutdown(window);
 }
 } // namespace gjt

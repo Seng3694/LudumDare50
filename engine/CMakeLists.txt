@@ -6,6 +6,8 @@ set(ENGINE_HEADERS
 	include/CustomMath.hpp
 	include/Game.hpp
 	include/GameState.hpp
+	include/MessageDispatcher.hpp
+	include/MessageSubscriber.hpp
 	include/ServiceLocator.hpp
 	include/Tileset.hpp
 )

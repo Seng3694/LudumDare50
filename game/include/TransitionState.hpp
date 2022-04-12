@@ -5,7 +5,7 @@
 
 #include "Animation.hpp"
 #include "AudioManager.hpp"
-#include "ContentManager.hpp"
+#include "Content.hpp"
 #include "CustomMath.hpp"
 #include "GameState.hpp"
 #include "Animation.hpp"
@@ -64,12 +64,10 @@ class TransitionState : public gjt::GameState
 
     virtual void load() override
     {
-        auto content = services->resolve<gjt::ContentManager>();
+        auto content = services->resolve<GameContentManager>();
         
-        bannerLeftTexture = content->loadFromFile<sf::Texture>(
-            "content/transition_banner_left.png");
-        bannerRightTexture = content->loadFromFile<sf::Texture>(
-            "content/transition_banner_right.png");
+        bannerLeftTexture = content->get<sf::Texture>(Content::TransitionBannerLeftTexture);
+        bannerRightTexture = content->get<sf::Texture>(Content::TransitionBannerRightTexture);
 
         bannerLeftStart = sf::Vector2f(-1.0f * (float)bannerLeftTexture->getSize().x, 0.0f);
         bannerLeftEnd = sf::Vector2f(-32.0f, 0.0f);

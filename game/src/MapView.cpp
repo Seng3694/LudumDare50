@@ -1,20 +1,20 @@
 #include "MapView.hpp"
 #include "ContentManager.hpp"
 #include "StringFormat.hpp"
+#include "Content.hpp"
 
 MapView::MapView(
     gjt::ServiceLocator *services, std::shared_ptr<TileMap> tileMap,
     const Score &score)
     : tileMap(tileMap), score(score), renderMoves(false)
 {
-    auto content = services->resolve<gjt::ContentManager>();
-    font = content->loadFromFile<sf::Font>("content/monogram-extended.ttf");
+    auto content = services->resolve<GameContentManager>();
+    font = content->get<sf::Font>(Content::MonogramFont);
 
     frame.setTexture(
-        *content->loadFromFile<sf::Texture>("content/map_frame.png"));
+        *content->get<sf::Texture>(Content::MapFrameTexture));
 
-    tileset = std::make_shared<gjt::Tileset>(
-        content->loadFromFile<sf::Texture>("content/tiles.png"), 16, 16);
+    tileset = content->get<gjt::Tileset>(Content::MapTilesTileset);
 
     starSpacing = 6.0f;
     starOffset = 38.0f;
