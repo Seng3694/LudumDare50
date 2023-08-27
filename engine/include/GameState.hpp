@@ -6,6 +6,8 @@
 namespace gjt
 {
 
+class Game;
+
 class GameState
 {
     friend class Game;

@@ -11,8 +11,7 @@ class MessageDispatcher;
 template <typename MessageType, typename Message> 
 class MessageSubscriber
 {
-    template <typename MessageType, typename Message> 
-    friend class MessageDispatcher;
+    friend class MessageDispatcher<MessageType, Message>;
 
   public:
     MessageSubscriber(MessageDispatcher<MessageType, Message> *dispatcher);
